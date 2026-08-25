@@ -4,7 +4,6 @@ import { Screen, Field, PrimaryButton, SecondaryButton, ErrorText } from "../com
 import { useAuth } from "../context/AuthContext";
 import { colors, font, spacing } from "../theme";
 
-// --- Sprint 1 - Task 14: Connect Login to API (via useAuth().login) ---
 export default function LoginScreen({ navigation }) {
   const { login } = useAuth();
   const [email, setEmail] = useState("");
