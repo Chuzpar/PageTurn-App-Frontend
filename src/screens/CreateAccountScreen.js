@@ -4,7 +4,6 @@ import { Screen, Field, PrimaryButton, SecondaryButton, ErrorText } from "../com
 import { useAuth } from "../context/AuthContext";
 import { font, spacing } from "../theme";
 
-// --- Sprint 1 - Task 13: Connect Registration to API (via useAuth().register) ---
 export default function CreateAccountScreen({ navigation }) {
   const { register } = useAuth();
   const [fullName, setFullName] = useState("");
