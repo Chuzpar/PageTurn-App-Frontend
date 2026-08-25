@@ -19,6 +19,7 @@ export function AuthProvider({ children }) {
           setUser(me);
         }
       } catch (e) {
+        // Stale/invalid token — clear it and fall back to logged out.
         await AsyncStorage.removeItem("pageturn_token");
       } finally {
         setIsLoading(false);
@@ -47,3 +48,30 @@ export function AuthProvider({ children }) {
     setToken(null);
     setUser(null);
   }, []);
+
+  const updateProfile = useCallback(async (payload) => {
+    const { user: updated } = await updateProfileApi(payload);
+    setUser(updated);
+    return updated;
+  }, []);
+
+  const value = {
+    user,
+    token,
+    isLoading,
+    isAuthenticated: !!token,
+    isAdmin: user?.role === "admin",
+    login,
+    register,
+    logout,
+    updateProfile,
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
+export function useAuth() {
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error("useAuth must be used within an AuthProvider");
+  return ctx;
+}
