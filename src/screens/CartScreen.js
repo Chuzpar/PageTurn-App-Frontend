@@ -30,8 +30,13 @@ export default function CartScreen({ route, navigation }) {
   useFocusEffect(useCallback(() => { load(type); }, [type, load]));
 
   const handleRemove = async (id) => {
-    await removeFromCart(id);
-    load(type);
+    setError("");
+    try {
+      await removeFromCart(id);
+      load(type);
+    } catch (e) {
+      setError(e.message);
+    }
   };
 
   const handleSubmitLending = async () => {

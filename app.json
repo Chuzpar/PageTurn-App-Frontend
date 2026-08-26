@@ -23,8 +23,6 @@
       },
       "package": "com.pageturn.mobile"
     },
-    "web": {
-      "favicon": "./assets/favicon.png"
-    }
+    "web": {}
   }
 }

@@ -1,5 +1,6 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 
 // Import admin screens
@@ -11,8 +12,9 @@ import AddManuscriptScreen from '../screens/admin/AddManuscriptScreen';
 import EditManuscriptScreen from '../screens/admin/EditManuscriptScreen';
 
 const Tab = createBottomTabNavigator();
+const Stack = createNativeStackNavigator();
 
-const AdminTabs = () => {
+const AdminTabScreens = () => {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -72,5 +74,13 @@ const AdminTabs = () => {
     </Tab.Navigator>
   );
 };
+
+const AdminTabs = () => (
+  <Stack.Navigator>
+    <Stack.Screen name="AdminHome" component={AdminTabScreens} options={{ headerShown: false }} />
+    <Stack.Screen name="AddManuscript" component={AddManuscriptScreen} options={{ title: 'Add New Book' }} />
+    <Stack.Screen name="EditManuscript" component={EditManuscriptScreen} options={{ title: 'Edit Book' }} />
+  </Stack.Navigator>
+);
 
 export default AdminTabs;

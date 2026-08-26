@@ -61,7 +61,7 @@ export default function BookDetailScreen({ route, navigation }) {
             />
             <SecondaryButton
               title="View Purchase Cart"
-              onPress={() => navigation.navigate("Cart", { screen: "CartMain", params: { type: "purchase" } })}
+              onPress={() => navigation.navigate("Cart", { type: "purchase" })}
               style={{ marginTop: spacing.sm }}
             />
           </>

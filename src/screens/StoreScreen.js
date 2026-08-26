@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { View, Text, FlatList, TouchableOpacity, StyleSheet } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
-import { Screen, Field, EmptyState } from "../components/UI";
+import { Screen, Field, EmptyState, ErrorText } from "../components/UI";
 import BookCard from "../components/BookCard";
 import { fetchBooks, fetchGenres } from "../services/api";
 import { colors, font, spacing, radii } from "../theme";
@@ -12,24 +12,23 @@ export default function StoreScreen({ navigation }) {
   const [query, setQuery] = useState("");
   const [activeGenre, setActiveGenre] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   const load = useCallback(async () => {
     setLoading(true);
+    setError("");
     try {
       const params = {};
       if (query) params.q = query;
       if (activeGenre) params.genre = activeGenre;
-      const [{ books }, { genres }] = await Promise.all([
+      const [{ books }, genreData] = await Promise.all([
         fetchBooks(params),
         genres.length ? Promise.resolve({ genres }) : fetchGenres(),
       ]);
       setBooks(books);
-      if (!genres.length) {
-        const g = await fetchGenres();
-        setGenres(g.genres);
-      }
+      if (!genres.length) setGenres(genreData.genres || []);
     } catch (e) {
-      // Keep last-known list on error; a toast/snackbar could surface e.message.
+      setError(e.message);
     } finally {
       setLoading(false);
     }
@@ -42,6 +41,7 @@ export default function StoreScreen({ navigation }) {
     <Screen>
       <Text style={font.h1}>PageTurn Store</Text>
       <Text style={[font.muted, { marginBottom: spacing.md }]}>Discover, buy, and collect your next read</Text>
+      <ErrorText>{error}</ErrorText>
 
       <Field placeholder="Search title or author..." value={query} onChangeText={setQuery} />
 

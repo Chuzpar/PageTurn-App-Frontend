@@ -23,7 +23,7 @@ export default function OrderConfirmationScreen({ route, navigation }) {
       />
       <SecondaryButton
         title="Continue Shopping"
-        onPress={() => navigation.navigate("StoreMain")}
+        onPress={() => navigation.navigate("MemberHome", { screen: "Store" })}
         style={{ width: "100%", marginTop: spacing.sm }}
       />
     </Screen>
