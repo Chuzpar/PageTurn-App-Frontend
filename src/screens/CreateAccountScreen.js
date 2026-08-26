@@ -22,6 +22,7 @@ export default function CreateAccountScreen({ navigation }) {
     if (password !== confirmPassword) {
       setError("Passwords do not match.");
       return;
+      
     }
     setLoading(true);
     try {

@@ -4,6 +4,7 @@ import { Screen, Field, PrimaryButton, ErrorText } from "../../components/UI";
 import { adminCreateBook } from "../../services/api";
 import { font, spacing } from "../../theme";
 
+export default function AddManuscriptScreen({ navigation }) {
 /**
  * Add New Manuscript Screen
  * Form for admins to add new books to the catalogue
@@ -20,6 +21,8 @@ export default function AddManuscriptScreen({ navigation }) {
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
 
+  const handleSave = async () => {
+    setError("");
   const handleSubmit = async () => {
     setError("");
     
@@ -34,6 +37,7 @@ export default function AddManuscriptScreen({ navigation }) {
       await adminCreateBook({
         title: title.trim(),
         author: author.trim(),
+        description,
         description: description.trim(),
         price: parseFloat(price) || 0,
         genre: genre.trim() || null,
@@ -51,6 +55,11 @@ export default function AddManuscriptScreen({ navigation }) {
     <ScrollView>
       <Screen>
         <Text style={font.h1}>Add New Manuscript</Text>
+        <Text style={[font.muted, { marginBottom: spacing.lg }]}>Curator submission form</Text>
+
+        <ErrorText>{error}</ErrorText>
+        <Field label="Book Title" placeholder="The Odyssey" value={title} onChangeText={setTitle} />
+        <Field label="Author" placeholder="Homer" value={author} onChangeText={setAuthor} />
         <Text style={[font.muted, { marginBottom: spacing.lg }]}>
           Curator submission form
         </Text>
@@ -79,6 +88,8 @@ export default function AddManuscriptScreen({ navigation }) {
           value={description}
           onChangeText={setDescription}
         />
+        <Field label="Retail Price ($)" placeholder="12.99" keyboardType="decimal-pad" value={price} onChangeText={setPrice} />
+        <Field label="Genre / Classification" placeholder="Classics" value={genre} onChangeText={setGenre} />
         
         <Field 
           label="Retail Price ($)" 
@@ -99,6 +110,11 @@ export default function AddManuscriptScreen({ navigation }) {
           <Text style={font.h3}>Available for Lending</Text>
           <Switch value={availableForLending} onValueChange={setAvailableForLending} />
         </View>
+        {availableForLending && (
+          <Field label="Copies Available to Lend" keyboardType="number-pad" value={stock} onChangeText={setStock} />
+        )}
+
+        <PrimaryButton title="Add Book to Archives" onPress={handleSave} loading={saving} />
 
         {availableForLending && (
           <Field 
