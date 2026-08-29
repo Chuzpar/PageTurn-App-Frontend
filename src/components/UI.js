@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, StyleSheet } from "react-native";
-import { colors, spacing, typography } from "../theme";
+import { colors, spacing, radii, font } from "../theme";
 
 /**
  * Shared UI primitives used across screens.
@@ -9,6 +9,10 @@ import { colors, spacing, typography } from "../theme";
 
 export function Screen({ children, style }) {
   return <View style={[styles.screen, style]}>{children}</View>;
+}
+
+export function Card({ children, style }) {
+  return <View style={[styles.card, style]}>{children}</View>;
 }
 
 export function Field({ label, style, ...inputProps }) {
@@ -42,26 +46,59 @@ export function PrimaryButton({ title, onPress, loading, disabled, style }) {
   );
 }
 
+export function SecondaryButton({ title, onPress, loading, disabled, style }) {
+  const isDisabled = disabled || loading;
+  return (
+    <TouchableOpacity
+      style={[styles.secondaryButton, isDisabled && styles.buttonDisabled, style]}
+      onPress={onPress}
+      disabled={isDisabled}
+      activeOpacity={0.8}
+    >
+      {loading ? (
+        <ActivityIndicator color={colors.primary} />
+      ) : (
+        <Text style={styles.secondaryButtonText}>{title}</Text>
+      )}
+    </TouchableOpacity>
+  );
+}
+
+export function Badge({ label, color }) {
+  return (
+    <View style={[styles.badge, color && { backgroundColor: color }]}>
+      <Text style={styles.badgeText}>{label}</Text>
+    </View>
+  );
+}
+
+export function EmptyState({ title, subtitle }) {
+  return (
+    <View style={styles.emptyState}>
+      <Text style={styles.emptyStateTitle}>{title}</Text>
+      {subtitle ? <Text style={styles.emptyStateSubtitle}>{subtitle}</Text> : null}
+    </View>
+  );
+}
+
 export function ErrorText({ children }) {
   if (!children) return null;
   return <Text style={styles.errorText}>{children}</Text>;
 }
-
-// Shared font/text style presets — some screens import `font` from theme.js,
-// this keeps a compatible alias available from UI.js too if needed.
-export const font = typography
-  ? {
-      h1: { fontSize: 24, fontWeight: "700", color: colors.text, marginBottom: spacing.sm },
-      h3: { fontSize: 16, fontWeight: "600", color: colors.text },
-      muted: { fontSize: 13, color: colors.textMuted },
-    }
-  : {};
 
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
     padding: spacing.lg,
     backgroundColor: colors.background,
+  },
+  card: {
+    backgroundColor: colors.white,
+    borderRadius: radii.md,
+    padding: spacing.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    marginBottom: spacing.md,
   },
   fieldContainer: {
     marginBottom: spacing.md,
@@ -75,7 +112,7 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 8,
+    borderRadius: radii.sm,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     fontSize: 14,
@@ -84,7 +121,7 @@ const styles = StyleSheet.create({
   },
   button: {
     backgroundColor: colors.primary,
-    borderRadius: 8,
+    borderRadius: radii.sm,
     paddingVertical: spacing.md,
     alignItems: "center",
     justifyContent: "center",
@@ -97,6 +134,46 @@ const styles = StyleSheet.create({
     color: colors.white,
     fontSize: 15,
     fontWeight: "600",
+  },
+  secondaryButton: {
+    backgroundColor: "transparent",
+    borderWidth: 1,
+    borderColor: colors.primary,
+    borderRadius: radii.sm,
+    paddingVertical: spacing.md,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: spacing.md,
+  },
+  secondaryButtonText: {
+    color: colors.primary,
+    fontSize: 15,
+    fontWeight: "600",
+  },
+  badge: {
+    alignSelf: "flex-start",
+    backgroundColor: colors.accent,
+    borderRadius: radii.pill,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 4,
+  },
+  badgeText: {
+    color: colors.white,
+    fontSize: 11,
+    fontWeight: "700",
+  },
+  emptyState: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: spacing.xl,
+  },
+  emptyStateTitle: {
+    ...font.h3,
+    marginBottom: spacing.xs,
+  },
+  emptyStateSubtitle: {
+    ...font.muted,
+    textAlign: "center",
   },
   errorText: {
     color: colors.error,
