@@ -19,16 +19,16 @@ export default function StoreScreen({ navigation }) {
       const params = {};
       if (query) params.q = query;
       if (activeGenre) params.genre = activeGenre;
-      const [{ books }, { genres }] = await Promise.all([
-        fetchBooks(params),
-        genres.length ? Promise.resolve({ genres }) : fetchGenres(),
-      ]);
-      setBooks(books);
-      if (!genres.length) {
-        const g = await fetchGenres();
-        setGenres(g.genres);
+
+      const booksResult = await fetchBooks(params);
+      setBooks(booksResult.books);
+
+      if (genres.length === 0) {
+        const genresResult = await fetchGenres();
+        setGenres(genresResult.genres);
       }
     } catch (e) {
+      console.error("StoreScreen load error:", e);
       // Keep last-known list on error; a toast/snackbar could surface e.message.
     } finally {
       setLoading(false);
