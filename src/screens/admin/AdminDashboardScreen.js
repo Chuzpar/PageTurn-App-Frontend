@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Text, ScrollView, RefreshControl } from "react-native";
-import { Screen, Card, ErrorText } from "../../components/UI";
+import { Screen, Card, PrimaryButton, ErrorText } from "../../components/UI";
 import { adminFetchDashboard } from "../../services/api";
+import { useAuth } from "../../context/AuthContext";
 import { font, spacing } from "../../theme";
 
 /**
@@ -9,6 +10,7 @@ import { font, spacing } from "../../theme";
  * Shows high-level stats: total books, orders, pending lending requests, etc.
  */
 export default function AdminDashboardScreen() {
+  const { logout } = useAuth();
   const [stats, setStats] = useState(null);
   const [error, setError] = useState("");
   const [refreshing, setRefreshing] = useState(false);
@@ -64,6 +66,12 @@ export default function AdminDashboardScreen() {
           <Text style={font.h3}>Total Members</Text>
           <Text style={font.body}>{stats?.total_members ?? "—"}</Text>
         </Card>
+
+        <PrimaryButton
+          title="Log Out"
+          onPress={logout}
+          style={{ marginTop: spacing.lg }}
+        />
       </Screen>
     </ScrollView>
   );

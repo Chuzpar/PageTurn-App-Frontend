@@ -27,3 +27,17 @@ export const typography = {
   subheading: { fontSize: 16, fontWeight: "600" },
   body: { fontSize: 14, fontWeight: "400" },
 };
+
+export const radii = {
+  sm: 6,
+  md: 12,
+  lg: 20,
+  pill: 999,
+};
+
+export const font = {
+  h1: { fontSize: 24, fontWeight: "700", color: colors.text },
+  h3: { fontSize: 16, fontWeight: "600", color: colors.text },
+  body: { fontSize: 14, fontWeight: "400", color: colors.text },
+  muted: { fontSize: 13, fontWeight: "400", color: colors.textMuted },
+};
