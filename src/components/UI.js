@@ -181,3 +181,6 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
 });
+export function LoadingSpinner() {
+  return <ActivityIndicator size="large" color={colors.primary} />;
+}
