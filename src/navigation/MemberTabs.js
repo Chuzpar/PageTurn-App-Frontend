@@ -3,7 +3,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 
 // Import screens (these will be created by other members)
-import StoreScreen from '../screens/StoreScreen';
+import StoreStack from './StoreStack';
 import LibraryScreen from '../screens/LibraryScreen';
 import CartScreen from '../screens/CartScreen';
 import ProfileScreen from '../screens/ProfileScreen';
@@ -42,7 +42,7 @@ const MemberTabs = () => {
     >
       <Tab.Screen 
         name="Store" 
-        component={StoreScreen} 
+        component={StoreStack} 
         options={{ title: 'Book Store' }}
       />
       <Tab.Screen 
