@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, StyleSheet } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { colors, spacing, radii, font } from "../theme";
 
 /**
@@ -15,15 +16,33 @@ export function Card({ children, style }) {
   return <View style={[styles.card, style]}>{children}</View>;
 }
 
-export function Field({ label, style, ...inputProps }) {
+export function Field({ label, style, secureTextEntry, ...inputProps }) {
+  const [hidden, setHidden] = useState(!!secureTextEntry);
+
   return (
     <View style={styles.fieldContainer}>
       {label ? <Text style={styles.fieldLabel}>{label}</Text> : null}
-      <TextInput
-        style={[styles.input, style]}
-        placeholderTextColor={colors.textMuted}
-        {...inputProps}
-      />
+      <View style={styles.inputWrapper}>
+        <TextInput
+          style={[styles.input, secureTextEntry && styles.inputWithIcon, style]}
+          placeholderTextColor={colors.textMuted}
+          secureTextEntry={secureTextEntry ? hidden : false}
+          {...inputProps}
+        />
+        {secureTextEntry ? (
+          <TouchableOpacity
+            style={styles.eyeButton}
+            onPress={() => setHidden((h) => !h)}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Ionicons
+              name={hidden ? "eye-off-outline" : "eye-outline"}
+              size={20}
+              color={colors.textMuted}
+            />
+          </TouchableOpacity>
+        ) : null}
+      </View>
     </View>
   );
 }
@@ -102,6 +121,19 @@ const styles = StyleSheet.create({
   },
   fieldContainer: {
     marginBottom: spacing.md,
+  },
+  inputWrapper: {
+    position: "relative",
+    justifyContent: "center",
+  },
+  inputWithIcon: {
+    paddingRight: 40,
+  },
+  eyeButton: {
+    position: "absolute",
+    right: spacing.sm,
+    height: "100%",
+    justifyContent: "center",
   },
   fieldLabel: {
     fontSize: 13,
