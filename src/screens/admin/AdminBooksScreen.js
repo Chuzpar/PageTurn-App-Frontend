@@ -3,7 +3,7 @@ import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert } from "react
 import { useFocusEffect } from "@react-navigation/native";
 import { Screen, EmptyState, ErrorText, SecondaryButton } from "../../components/UI";
 import { adminFetchBooks, adminDeleteBook } from "../../services/api";
-import { colors, font, spacing, radii } from "../../theme";
+import { colors, font, formatCurrency, spacing, radii } from "../../theme";
 
 /**
  * Admin Books Management Screen
@@ -61,7 +61,7 @@ export default function AdminBooksScreen({ navigation }) {
       <View style={styles.bookInfo}>
         <Text style={font.h3}>{item.title}</Text>
         <Text style={font.muted}>
-          {item.author} · ${item.price?.toFixed(2)} · {item.genre || "Uncategorized"}
+          {item.author} · {formatCurrency(item.price)} · {item.genre || "Uncategorized"}
         </Text>
         <Text style={font.muted}>{item.stock_for_lending} copies for lending</Text>
       </View>

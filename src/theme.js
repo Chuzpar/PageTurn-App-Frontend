@@ -32,3 +32,10 @@ export const font = {
 	body: { fontSize: 16, lineHeight: 24, color: colors.text },
 	muted: { fontSize: 14, color: colors.textMuted },
 };
+
+export function formatCurrency(amount) {
+	return `KSh ${Number(amount || 0).toLocaleString("en-KE", {
+		minimumFractionDigits: 2,
+		maximumFractionDigits: 2,
+	})}`;
+}

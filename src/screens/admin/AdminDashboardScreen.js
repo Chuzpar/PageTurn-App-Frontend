@@ -1,13 +1,13 @@
 import React, { useCallback, useState } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
-import { Screen, Card, SecondaryButton } from "../../components/UI";
+import { Screen, Card, SecondaryButton, PrimaryButton } from "../../components/UI";
 import { adminFetchDashboard } from "../../services/api";
 import { useAuth } from "../../context/AuthContext";
-import { colors, font, spacing } from "../../theme";
+import { colors, font, formatCurrency, spacing } from "../../theme";
 
 export default function AdminDashboardScreen({ navigation }) {
-	const { user } = useAuth();
+	const { user, logout } = useAuth();
 	const [stats, setStats] = useState(null);
 
 	useFocusEffect(
@@ -27,14 +27,14 @@ export default function AdminDashboardScreen({ navigation }) {
 				<StatCard value={stats?.active_loans} label="Active Loans" />
 				<StatCard value={stats?.total_orders} label="Orders" />
 				<StatCard value={stats?.orders_awaiting_approval} label="Awaiting Approval" />
-				<StatCard value={stats?.total_revenue == null ? null : `$${stats.total_revenue.toFixed(2)}`} label="Revenue" />
+				<StatCard value={stats?.total_revenue == null ? null : formatCurrency(stats.total_revenue)} label="Revenue" />
 			</View>
 
 			<SecondaryButton title="+ Add New Manuscript" onPress={() => navigation.navigate("AddManuscript")} style={{ marginTop: spacing.lg }} />
 			<SecondaryButton title="Manage Books" onPress={() => navigation.navigate("Books")} />
 			<SecondaryButton title="Lending Requests" onPress={() => navigation.navigate("Lending")} />
 			<SecondaryButton title="Purchase Orders" onPress={() => navigation.navigate("Orders")} />
-		</Screen>
+		<PrimaryButton title="Log Out" onPress={logout} style={{ marginTop: spacing.lg }} />		</Screen>
 	);
 }
 

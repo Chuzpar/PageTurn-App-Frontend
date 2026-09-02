@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { Screen, PrimaryButton, SecondaryButton } from "../components/UI";
-import { colors, font, spacing, radii } from "../theme";
+import { colors, font, formatCurrency, spacing, radii } from "../theme";
 
 export default function OrderConfirmationScreen({ route, navigation }) {
   const { order } = route.params;
@@ -13,7 +13,7 @@ export default function OrderConfirmationScreen({ route, navigation }) {
       </View>
       <Text style={[font.h1, { marginTop: spacing.lg }]}>Order Confirmed!</Text>
       <Text style={[font.muted, { textAlign: "center", marginTop: spacing.xs, marginBottom: spacing.lg }]}>
-        Order #{order.id} · Total ${order.total?.toFixed(2)}
+        Order #{order.id} · Total {formatCurrency(order.total)}
       </Text>
 
       <PrimaryButton
