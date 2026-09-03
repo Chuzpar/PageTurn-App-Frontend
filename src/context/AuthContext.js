@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { loginUser, registerUser, fetchMe, updateProfile as updateProfileApi } from "../services/api";
+import { loginUser, registerUser, fetchMe, updateProfile as updateProfileApi, setUnauthorizedHandler } from "../services/api";
 
 const AuthContext = createContext(null);
 
@@ -19,7 +19,6 @@ export function AuthProvider({ children }) {
           setUser(me);
         }
       } catch (e) {
-        // Stale/invalid token — clear it and fall back to logged out.
         await AsyncStorage.removeItem("pageturn_token");
       } finally {
         setIsLoading(false);
@@ -47,6 +46,14 @@ export function AuthProvider({ children }) {
     await AsyncStorage.removeItem("pageturn_token");
     setToken(null);
     setUser(null);
+  }, []);
+
+  useEffect(() => {
+    setUnauthorizedHandler(() => {
+      AsyncStorage.removeItem("pageturn_token");
+      setToken(null);
+      setUser(null);
+    });
   }, []);
 
   const updateProfile = useCallback(async (payload) => {

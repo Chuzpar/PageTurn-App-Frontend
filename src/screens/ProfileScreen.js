@@ -4,7 +4,6 @@ import { Screen, Card, SecondaryButton, PrimaryButton, Badge } from "../componen
 import { useAuth } from "../context/AuthContext";
 import { font, spacing } from "../theme";
 
-// --- Sprint 5 - Task 3: Implement Logout ---
 export default function ProfileScreen({ navigation }) {
   const { user, logout, isAdmin } = useAuth();
 

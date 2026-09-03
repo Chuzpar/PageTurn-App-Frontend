@@ -3,6 +3,7 @@ import { View, Text, FlatList, TouchableOpacity, StyleSheet } from "react-native
 import { useFocusEffect } from "@react-navigation/native";
 import { Screen, Field, EmptyState } from "../components/UI";
 import BookCard from "../components/BookCard";
+import { BookGridSkeleton } from "../components/Skeleton";
 import { fetchBooks, fetchGenres } from "../services/api";
 import { colors, font, spacing, radii } from "../theme";
 
@@ -10,31 +11,32 @@ export default function StoreScreen({ navigation }) {
   const [books, setBooks] = useState([]);
   const [genres, setGenres] = useState([]);
   const [query, setQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
   const [activeGenre, setActiveGenre] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedQuery(query), 350);
+    return () => clearTimeout(t);
+  }, [query]);
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
       const params = {};
-      if (query) params.q = query;
+      if (debouncedQuery) params.q = debouncedQuery;
       if (activeGenre) params.genre = activeGenre;
-      const [{ books }, { genres }] = await Promise.all([
-        fetchBooks(params),
-        genres.length ? Promise.resolve({ genres }) : fetchGenres(),
-      ]);
+      const { books } = await fetchBooks(params);
       setBooks(books);
       if (!genres.length) {
         const g = await fetchGenres();
         setGenres(g.genres);
       }
     } catch (e) {
-      // Keep last-known list on error; a toast/snackbar could surface e.message.
     } finally {
       setLoading(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query, activeGenre]);
+  }, [debouncedQuery, activeGenre]);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
 
@@ -63,18 +65,22 @@ export default function StoreScreen({ navigation }) {
         ))}
       </View>
 
-      <FlatList
-        data={books}
-        keyExtractor={(item) => String(item.id)}
-        numColumns={2}
-        columnWrapperStyle={{ justifyContent: "space-between" }}
-        refreshing={loading}
-        onRefresh={load}
-        ListEmptyComponent={!loading ? <EmptyState text="No books match your search." /> : null}
-        renderItem={({ item }) => (
-          <BookCard book={item} onPress={() => navigation.navigate("BookDetail", { bookId: item.id, mode: "purchase" })} />
-        )}
-      />
+      {loading && books.length === 0 ? (
+        <BookGridSkeleton />
+      ) : (
+        <FlatList
+          data={books}
+          keyExtractor={(item) => String(item.id)}
+          numColumns={2}
+          columnWrapperStyle={{ justifyContent: "space-between" }}
+          refreshing={loading}
+          onRefresh={load}
+          ListEmptyComponent={!loading ? <EmptyState text="No books match your search." /> : null}
+          renderItem={({ item }) => (
+            <BookCard book={item} onPress={() => navigation.navigate("BookDetail", { bookId: item.id, mode: "purchase" })} />
+          )}
+        />
+      )}
     </Screen>
   );
 }

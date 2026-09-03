@@ -5,17 +5,14 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
-    "assetBundlePatterns": ["**/*"],
-    "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.pageturn.mobile"
+    "splash": {
+      "backgroundColor": "#F5F1E8"
     },
+    "assetBundlePatterns": ["**/*"],
+    "ios": { "supportsTablet": true },
     "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      },
-      "package": "com.pageturn.mobile"
-    }
+      "adaptiveIcon": { "backgroundColor": "#F5F1E8" }
+    },
+    "web": { "bundler": "metro" }
   }
 }
