@@ -4,7 +4,6 @@ import { Screen, Field, PrimaryButton, ErrorText } from "../components/UI";
 import { useAuth } from "../context/AuthContext";
 import { font, spacing, colors } from "../theme";
 
-
 export default function AccountSettingsScreen({ navigation }) {
   const { user, updateProfile } = useAuth();
   const [fullName, setFullName] = useState(user?.full_name || "");

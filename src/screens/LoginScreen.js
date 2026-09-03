@@ -20,6 +20,7 @@ export default function LoginScreen({ navigation }) {
     setLoading(true);
     try {
       await login(email.trim(), password);
+      // RootNavigator swaps to the authenticated stack automatically.
     } catch (e) {
       setError(e.message);
     } finally {

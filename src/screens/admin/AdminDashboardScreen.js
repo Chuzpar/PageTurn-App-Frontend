@@ -1,78 +1,63 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { Text, ScrollView, RefreshControl } from "react-native";
-import { Screen, Card, PrimaryButton, ErrorText } from "../../components/UI";
+import React, { useCallback, useState } from "react";
+import { View, Text, StyleSheet } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
+import { Screen, Card, SecondaryButton } from "../../components/UI";
 import { adminFetchDashboard } from "../../services/api";
 import { useAuth } from "../../context/AuthContext";
-import { font, spacing } from "../../theme";
+import { colors, font, spacing } from "../../theme";
 
-/**
- * Admin Dashboard Screen
- * Shows high-level stats: total books, orders, pending lending requests, etc.
- */
-export default function AdminDashboardScreen() {
-  const { logout } = useAuth();
+export default function AdminDashboardScreen({ navigation }) {
+  const { user } = useAuth();
   const [stats, setStats] = useState(null);
-  const [error, setError] = useState("");
-  const [refreshing, setRefreshing] = useState(false);
 
-  const loadStats = useCallback(async () => {
-    setError("");
-    try {
-      const data = await adminFetchDashboard();
-      setStats(data);
-    } catch (e) {
-      setError(e.message || "Failed to load dashboard stats.");
-    }
-  }, []);
-
-  useEffect(() => {
-    loadStats();
-  }, [loadStats]);
-
-  const onRefresh = async () => {
-    setRefreshing(true);
-    await loadStats();
-    setRefreshing(false);
-  };
+  useFocusEffect(
+    useCallback(() => {
+      adminFetchDashboard().then(setStats);
+    }, [])
+  );
 
   return (
-    <ScrollView
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-    >
-      <Screen>
-        <Text style={font.h1}>Admin Dashboard</Text>
-        <Text style={[font.muted, { marginBottom: spacing.lg }]}>
-          Overview of store activity
-        </Text>
+    <Screen>
+      <Text style={font.h1}>Admin Panel</Text>
+      <Text style={[font.muted, { marginBottom: spacing.lg }]}>Welcome back, {user?.full_name}</Text>
 
-        <ErrorText>{error}</ErrorText>
-
-        <Card>
-          <Text style={font.h3}>Total Books</Text>
-          <Text style={font.body}>{stats?.total_books ?? "—"}</Text>
+      <View style={styles.statsRow}>
+        <Card style={styles.statCard}>
+          <Text style={styles.statValue}>{stats?.total_books ?? "—"}</Text>
+          <Text style={font.muted}>Books</Text>
         </Card>
-
-        <Card>
-          <Text style={font.h3}>Pending Orders</Text>
-          <Text style={font.body}>{stats?.pending_orders ?? "—"}</Text>
+        <Card style={styles.statCard}>
+          <Text style={styles.statValue}>{stats?.pending_lending_requests ?? "—"}</Text>
+          <Text style={font.muted}>Pending Loans</Text>
         </Card>
-
-        <Card>
-          <Text style={font.h3}>Pending Lending Requests</Text>
-          <Text style={font.body}>{stats?.pending_lending_requests ?? "—"}</Text>
+        <Card style={styles.statCard}>
+          <Text style={styles.statValue}>{stats?.active_loans ?? "—"}</Text>
+          <Text style={font.muted}>Active Loans</Text>
         </Card>
-
-        <Card>
-          <Text style={font.h3}>Total Members</Text>
-          <Text style={font.body}>{stats?.total_members ?? "—"}</Text>
+        <Card style={styles.statCard}>
+          <Text style={styles.statValue}>{stats?.total_orders ?? "—"}</Text>
+          <Text style={font.muted}>Orders</Text>
         </Card>
+        <Card style={styles.statCard}>
+          <Text style={styles.statValue}>{stats?.orders_awaiting_approval ?? "—"}</Text>
+          <Text style={font.muted}>Awaiting Approval</Text>
+        </Card>
+        <Card style={styles.statCard}>
+          <Text style={styles.statValue}>${stats?.total_revenue?.toFixed(2) ?? "—"}</Text>
+          <Text style={font.muted}>Revenue</Text>
+        </Card>
+      </View>
 
-        <PrimaryButton
-          title="Log Out"
-          onPress={logout}
-          style={{ marginTop: spacing.lg }}
-        />
-      </Screen>
-    </ScrollView>
+      <SecondaryButton title="+ Add New Manuscript" onPress={() => navigation.navigate("AddManuscript")} style={{ marginTop: spacing.lg }} />
+      <SecondaryButton title="Manage Books" onPress={() => navigation.navigate("AdminBooks")} style={{ marginTop: spacing.sm }} />
+      <SecondaryButton title="Lending Requests" onPress={() => navigation.navigate("AdminLendingRequests")} style={{ marginTop: spacing.sm }} />
+      <SecondaryButton title="Purchase Orders" onPress={() => navigation.navigate("AdminOrders")} style={{ marginTop: spacing.sm }} />
+    </Screen>
   );
 }
+
+const styles = StyleSheet.create({
+  statsRow: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
+  statCard: { width: "47%", alignItems: "center", paddingVertical: spacing.lg },
+  statValue: { fontSize: 26, fontWeight: "700", color: colors.navy },
+});

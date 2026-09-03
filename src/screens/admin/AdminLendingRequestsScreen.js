@@ -1,100 +1,114 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { Text, FlatList, RefreshControl } from "react-native";
-import { Screen, Card, PrimaryButton, SecondaryButton, EmptyState, ErrorText } from "../../components/UI";
-import { adminApproveLending, adminRejectLending } from "../../services/api";
-import { font, spacing } from "../../theme";
+import React, { useCallback, useState } from "react";
+import { View, Text, FlatList, TouchableOpacity, StyleSheet } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
+import { Screen, EmptyState, ErrorText } from "../../components/UI";
+import { adminFetchLendingRequests, adminApproveLending, adminRejectLending } from "../../services/api";
+import { useToast } from "../../context/ToastContext";
+import { colors, font, spacing, radii } from "../../theme";
 
-/**
- * Admin Lending Requests Screen
- * Lists pending lending requests for admin approval/rejection.
- * NOTE: Uses a placeholder empty list until a fetch-all-requests endpoint
- * is wired up — this screen exists so admin navigation doesn't crash.
- */
 export default function AdminLendingRequestsScreen() {
+  const { showToast } = useToast();
   const [requests, setRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [refreshing, setRefreshing] = useState(false);
-  const [actioningId, setActioningId] = useState(null);
+  const [busyId, setBusyId] = useState(null);
 
-  const loadRequests = useCallback(async () => {
-    setError("");
-    // TODO: wire up a real "fetch all pending lending requests" endpoint.
-    // For now this stays empty so the screen renders without crashing.
-    setRequests([]);
+  const load = useCallback(() => {
+    setLoading(true);
+    adminFetchLendingRequests("pending")
+      .then(({ requests }) => setRequests(requests))
+      .catch((e) => setError(e.message))
+      .finally(() => setLoading(false));
   }, []);
 
-  useEffect(() => {
-    loadRequests();
-  }, [loadRequests]);
+  useFocusEffect(useCallback(() => { load(); }, [load]));
 
-  const onRefresh = async () => {
-    setRefreshing(true);
-    await loadRequests();
-    setRefreshing(false);
-  };
-
-  const handleApprove = async (id) => {
-    setActioningId(id);
+  const handleApprove = async (id, title) => {
+    setBusyId(id);
+    setError("");
     try {
       await adminApproveLending(id);
-      setRequests((prev) => prev.filter((r) => r.id !== id));
+      showToast(`Approved "${title}"`);
+      load();
     } catch (e) {
-      setError(e.message || "Failed to approve request.");
+      setError(e.message);
+      showToast(e.message, "error");
     } finally {
-      setActioningId(null);
+      setBusyId(null);
     }
   };
 
-  const handleReject = async (id) => {
-    setActioningId(id);
+  const handleReject = async (id, title) => {
+    setBusyId(id);
+    setError("");
     try {
       await adminRejectLending(id);
-      setRequests((prev) => prev.filter((r) => r.id !== id));
+      showToast(`Rejected "${title}"`);
+      load();
     } catch (e) {
-      setError(e.message || "Failed to reject request.");
+      setError(e.message);
+      showToast(e.message, "error");
     } finally {
-      setActioningId(null);
+      setBusyId(null);
     }
   };
 
   return (
     <Screen>
       <Text style={font.h1}>Lending Requests</Text>
-      <Text style={[font.muted, { marginBottom: spacing.lg }]}>
-        Review and approve borrowing requests
-      </Text>
+      <Text style={[font.muted, { marginBottom: spacing.md }]}>{requests.length} pending requests</Text>
 
       <ErrorText>{error}</ErrorText>
 
       <FlatList
         data={requests}
         keyExtractor={(item) => String(item.id)}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-        ListEmptyComponent={
-          <EmptyState
-            title="No pending requests"
-            subtitle="New lending requests will show up here."
-          />
-        }
+        refreshing={loading}
+        onRefresh={load}
+        ListEmptyComponent={!loading ? <EmptyState text="No pending lending requests." /> : null}
         renderItem={({ item }) => (
-          <Card>
-            <Text style={font.h3}>{item.book_title}</Text>
-            <Text style={font.muted}>Requested by {item.user_name}</Text>
-            <PrimaryButton
-              title="Approve"
-              onPress={() => handleApprove(item.id)}
-              loading={actioningId === item.id}
-              style={{ marginTop: spacing.sm }}
-            />
-            <SecondaryButton
-              title="Reject"
-              onPress={() => handleReject(item.id)}
-              loading={actioningId === item.id}
-              style={{ marginTop: spacing.sm }}
-            />
-          </Card>
+          <View style={styles.card}>
+            <Text style={font.h3}>{item.book?.title}</Text>
+            <Text style={font.muted}>Requested for {item.lending_days} days</Text>
+            <Text style={font.muted}>
+              Requested {new Date(item.requested_at).toLocaleDateString()} · Copies left: {item.book?.stock_for_lending}
+            </Text>
+            <View style={styles.actionsRow}>
+              <TouchableOpacity
+                style={[styles.actionBtn, styles.reject]}
+                onPress={() => handleReject(item.id, item.book?.title)}
+                disabled={busyId === item.id}
+              >
+                <Text style={styles.rejectText}>Reject</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.actionBtn, styles.approve]}
+                onPress={() => handleApprove(item.id, item.book?.title)}
+                disabled={busyId === item.id}
+              >
+                <Text style={styles.approveText}>Approve</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         )}
       />
     </Screen>
   );
 }
+
+const styles = StyleSheet.create({
+  card: {
+    backgroundColor: colors.card,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: spacing.md,
+    marginBottom: spacing.sm,
+  },
+  actionsRow: { flexDirection: "row", gap: spacing.sm, marginTop: spacing.sm },
+  actionBtn: { flex: 1, paddingVertical: 10, borderRadius: radii.sm, alignItems: "center" },
+  reject: { borderWidth: 1, borderColor: colors.danger },
+  approve: { backgroundColor: colors.success },
+  rejectText: { color: colors.danger, fontWeight: "700", fontSize: 12 },
+  approveText: { color: colors.white, fontWeight: "700", fontSize: 12 },
+});
