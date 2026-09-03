@@ -87,3 +87,5 @@ export const adminAdvanceOrder = (id) => api.post(`/admin/orders/${id}/advance`)
 export const adminFetchDashboard = () => api.get("/admin/dashboard").then((r) => r.data);
 
 export default api;
+
+export const mpesaStkPush = (payload) => api.post("/mpesa/stkpush", payload).then((r) => r.data);

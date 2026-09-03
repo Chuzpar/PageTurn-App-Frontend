@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Text, ScrollView, View, TouchableOpacity, StyleSheet } from "react-native";
 import { Screen, Field, PrimaryButton, ErrorText } from "../components/UI";
 import { font, spacing, colors } from "../theme";
-import { createOrder } from "../services/api";
+import { checkout, mpesaStkPush } from "../services/api";
 
 export default function CheckoutScreen({ navigation, route }) {
   const [address, setAddress] = useState("");
@@ -29,19 +29,19 @@ export default function CheckoutScreen({ navigation, route }) {
 
     setLoading(true);
     try {
-      const payload = {
-        payment_method: paymentMethod,
-        shipping_address: address,
-        phone: paymentMethod === "mpesa" ? phone : undefined,
-      };
-      const result = await createOrder(payload);
-
+      let result;
       if (paymentMethod === "mpesa") {
-        // Navigate to a waiting screen or poll
-        navigation.navigate("OrderConfirmation", { order: result.order });
+        result = await mpesaStkPush({
+          shipping_address: address,
+          phone,
+        });
       } else {
-        navigation.navigate("OrderConfirmation", { order: result.order });
+        result = await checkout({
+          shipping_address: address,
+          card_number: cardNumber,
+        });
       }
+      navigation.navigate("OrderConfirmation", { order: result.order });
     } catch (e) {
       setError(e.response?.data?.error || e.message || "Payment failed");
     } finally {
