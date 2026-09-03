@@ -82,7 +82,7 @@ export default function EditManuscriptScreen({ route, navigation }) {
         />
         
         <Field 
-          label="Retail Price ($)" 
+          label="Retail Price (KSh)"
           keyboardType="decimal-pad" 
           value={price} 
           onChangeText={setPrice} 

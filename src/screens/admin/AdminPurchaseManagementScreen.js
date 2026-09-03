@@ -3,7 +3,7 @@ import { View, Text, FlatList, TouchableOpacity, StyleSheet } from "react-native
 import { useFocusEffect } from "@react-navigation/native";
 import { Screen, EmptyState, Badge, ErrorText } from "../../components/UI";
 import { adminFetchOrders, adminApproveOrder, adminRejectOrder, adminAdvanceOrder } from "../../services/api";
-import { colors, font, spacing, radii } from "../../theme";
+import { colors, font, formatCurrency, spacing, radii } from "../../theme";
 
 const STATUS_TONE = { paid: "gold", approved: "success", shipped: "success", delivered: "success", cancelled: "danger" };
 const NEXT_ACTION_LABEL = { approved: "Mark as Shipped", shipped: "Mark as Delivered" };
@@ -59,7 +59,7 @@ export default function AdminPurchaseManagementScreen() {
             {item.items.map((oi) => (
               <Text key={oi.id} style={font.muted}>{oi.book?.title} × {oi.quantity}</Text>
             ))}
-            <Text style={[font.h3, { marginTop: spacing.xs }]}>${item.total?.toFixed(2)}</Text>
+            <Text style={[font.h3, { marginTop: spacing.xs }]}>{formatCurrency(item.total)}</Text>
             <Text style={font.muted}>{new Date(item.created_at).toLocaleString()}</Text>
 
             {item.status === "paid" && (

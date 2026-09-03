@@ -1,9 +1,9 @@
 import React, { useCallback, useState } from "react";
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert } from "react-native";
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert, Switch } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { Screen, EmptyState, ErrorText, SecondaryButton } from "../../components/UI";
-import { adminFetchBooks, adminDeleteBook } from "../../services/api";
-import { colors, font, spacing, radii } from "../../theme";
+import { adminFetchBooks, adminDeleteBook, adminUpdateBook } from "../../services/api";
+import { colors, font, formatCurrency, spacing, radii } from "../../theme";
 
 /**
  * Admin Books Management Screen
@@ -56,16 +56,47 @@ export default function AdminBooksScreen({ navigation }) {
     );
   };
 
+  const handleAvailabilityChange = async (book, available) => {
+    setError("");
+    setBooks((currentBooks) => currentBooks.map((currentBook) => (
+      currentBook.id === book.id
+        ? { ...currentBook, stock_for_lending: available ? Math.max(Number(currentBook.stock_for_lending) || 1, 1) : 0 }
+        : currentBook
+    )));
+
+    try {
+      await adminUpdateBook(book.id, {
+        title: book.title,
+        author: book.author,
+        description: book.description || "",
+        price: Number(book.price) || 0,
+        genre: book.genre || null,
+        stock_for_lending: available ? Math.max(Number(book.stock_for_lending) || 1, 1) : 0,
+      });
+    } catch (e) {
+      setError(e.message);
+      await loadBooks();
+    }
+  };
+
   const renderBookItem = ({ item }) => (
     <View style={styles.row}>
       <View style={styles.bookInfo}>
         <Text style={font.h3}>{item.title}</Text>
         <Text style={font.muted}>
-          {item.author} · ${item.price?.toFixed(2)} · {item.genre || "Uncategorized"}
+          {item.author} · {formatCurrency(item.price)} · {item.genre || "Uncategorized"}
         </Text>
         <Text style={font.muted}>{item.stock_for_lending} copies for lending</Text>
+        <Text style={item.stock_for_lending > 0 ? styles.availableText : styles.unavailableText}>
+          {item.stock_for_lending > 0 ? "Available to members" : "Unavailable to members"}
+        </Text>
       </View>
       <View style={styles.actions}>
+        <Switch
+          value={Number(item.stock_for_lending) > 0}
+          onValueChange={(available) => handleAvailabilityChange(item, available)}
+          accessibilityLabel={`${item.title} lending availability`}
+        />
         <TouchableOpacity 
           onPress={() => navigation.navigate("EditManuscript", { book: item })}
         >
@@ -138,4 +169,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     paddingVertical: 2,
   },
+  availableText: { color: colors.success, fontSize: 12, fontWeight: "700", marginTop: spacing.xs },
+  unavailableText: { color: colors.danger, fontSize: 12, fontWeight: "700", marginTop: spacing.xs },
 });

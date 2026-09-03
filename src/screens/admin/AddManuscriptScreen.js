@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { Text, ScrollView, Switch, View } from "react-native";
+import { Text, ScrollView, Switch, View, FlatList, TouchableOpacity, StyleSheet } from "react-native";
 import { Screen, Field, PrimaryButton, ErrorText } from "../../components/UI";
-import { adminCreateBook } from "../../services/api";
-import { font, spacing } from "../../theme";
+import { adminCreateBook, searchOpenLibraryBooks } from "../../services/api";
+import { font, spacing, colors, radii } from "../../theme";
 
 export default function AddManuscriptScreen({ navigation }) {
   const [title, setTitle] = useState("");
@@ -56,7 +56,7 @@ export default function AddManuscriptScreen({ navigation }) {
           value={description}
           onChangeText={setDescription}
         />
-        <Field label="Retail Price ($)" placeholder="12.99" keyboardType="decimal-pad" value={price} onChangeText={setPrice} />
+        <Field label="Retail Price (KSh)" placeholder="1,299" keyboardType="decimal-pad" value={price} onChangeText={setPrice} />
         <Field label="Genre / Classification" placeholder="Classics" value={genre} onChangeText={setGenre} />
 
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: spacing.md }}>

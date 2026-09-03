@@ -3,7 +3,7 @@ import { View, Text, FlatList, TouchableOpacity, StyleSheet } from "react-native
 import { useFocusEffect } from "@react-navigation/native";
 import { Screen, PrimaryButton, EmptyState, ErrorText } from "../components/UI";
 import { fetchCart, removeFromCart, submitLendingRequests } from "../services/api";
-import { colors, font, spacing, radii } from "../theme";
+import { colors, font, formatCurrency, spacing, radii } from "../theme";
 
 export default function CartScreen({ route, navigation }) {
   const initialType = route?.params?.type || "purchase";
@@ -30,8 +30,13 @@ export default function CartScreen({ route, navigation }) {
   useFocusEffect(useCallback(() => { load(type); }, [type, load]));
 
   const handleRemove = async (id) => {
-    await removeFromCart(id);
-    load(type);
+    setError("");
+    try {
+      await removeFromCart(id);
+      load(type);
+    } catch (e) {
+      setError(e.message);
+    }
   };
 
   const handleSubmitLending = async () => {
@@ -75,7 +80,7 @@ export default function CartScreen({ route, navigation }) {
               <Text style={font.h3}>{item.book?.title}</Text>
               <Text style={font.muted}>
                 {type === "purchase"
-                  ? `Qty ${item.quantity} · $${item.book?.price?.toFixed(2)}`
+                  ? `Qty ${item.quantity} · ${formatCurrency(item.book?.price)}`
                   : `Borrow for ${item.lending_days} days`}
               </Text>
             </View>
@@ -90,7 +95,7 @@ export default function CartScreen({ route, navigation }) {
         <View>
           <View style={styles.summaryRow}>
             <Text style={font.h3}>Subtotal</Text>
-            <Text style={font.h3}>${subtotal.toFixed(2)}</Text>
+            <Text style={font.h3}>{formatCurrency(subtotal)}</Text>
           </View>
           <PrimaryButton
             title="Proceed to Checkout"
