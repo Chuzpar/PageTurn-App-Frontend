@@ -101,8 +101,6 @@ export default function CheckoutScreen({ navigation, route }) {
     </ScrollView>
   );
 }
-<<<<<<< Updated upstream
-=======
 
 const styles = StyleSheet.create({
   methodRow: { flexDirection: "row", marginBottom: spacing.md },
@@ -119,4 +117,3 @@ const styles = StyleSheet.create({
   methodText: { color: colors.textMuted, fontWeight: "600" },
   methodTextActive: { color: "#fff", fontWeight: "600" },
 });
->>>>>>> Stashed changes
