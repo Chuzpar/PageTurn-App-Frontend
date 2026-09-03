@@ -38,10 +38,22 @@ const MemberTabScreens = () => {
 
           return <Ionicons name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: '#4A90E2',
-        tabBarInactiveTintColor: 'gray',
+        tabBarActiveTintColor: '#1F2F50',
+        tabBarInactiveTintColor: '#8B94A8',
+        tabBarStyle: {
+          height: 92,
+          paddingTop: 8,
+          paddingBottom: 18,
+          borderTopWidth: 1,
+          borderTopColor: '#E8DECC',
+          backgroundColor: '#FFFFFF',
+        },
+        tabBarLabelStyle: {
+          fontSize: 14,
+          fontWeight: '600',
+        },
         headerStyle: {
-          backgroundColor: '#4A90E2',
+          backgroundColor: '#1F2F50',
         },
         headerTintColor: '#fff',
         headerTitleStyle: {

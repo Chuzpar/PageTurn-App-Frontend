@@ -1,13 +1,13 @@
 export const colors = {
-	background: "#F7F9FC",
+	background: "#F8F4EC",
 	card: "#FFFFFF",
-	navy: "#17324D",
-	gold: "#C9973E",
-	text: "#18212B",
-	textMuted: "#667382",
-	border: "#DCE3EA",
-	success: "#2E8B57",
-	danger: "#C94C4C",
+	navy: "#1F2F50",
+	gold: "#B8873E",
+	text: "#263044",
+	textMuted: "#687184",
+	border: "#E8DECC",
+	success: "#26834C",
+	danger: "#B44D38",
 	white: "#FFFFFF",
 };
 
@@ -27,8 +27,8 @@ export const radii = {
 };
 
 export const font = {
-	h1: { fontSize: 28, fontWeight: "700", color: colors.navy },
-	h3: { fontSize: 18, fontWeight: "700", color: colors.navy },
+	h1: { fontFamily: "Georgia", fontSize: 28, fontWeight: "700", color: colors.navy },
+	h3: { fontFamily: "Georgia", fontSize: 18, fontWeight: "700", color: colors.navy },
 	body: { fontSize: 16, lineHeight: 24, color: colors.text },
 	muted: { fontSize: 14, color: colors.textMuted },
 };

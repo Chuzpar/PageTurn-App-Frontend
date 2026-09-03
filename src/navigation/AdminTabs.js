@@ -35,10 +35,10 @@ const AdminTabScreens = () => {
 
           return <Ionicons name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: '#4A90E2',
-        tabBarInactiveTintColor: 'gray',
+        tabBarActiveTintColor: '#1F2F50',
+        tabBarInactiveTintColor: '#8B94A8',
         headerStyle: {
-          backgroundColor: '#4A90E2',
+          backgroundColor: '#1F2F50',
         },
         headerTintColor: '#fff',
         headerTitleStyle: {
