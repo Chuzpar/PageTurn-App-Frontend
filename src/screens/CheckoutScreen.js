@@ -1,61 +1,122 @@
 import React, { useState } from "react";
-import { Text, ScrollView } from "react-native";
+import { Text, ScrollView, View, TouchableOpacity, StyleSheet } from "react-native";
 import { Screen, Field, PrimaryButton, ErrorText } from "../components/UI";
-import { font, spacing } from "../theme";
+import { font, spacing, colors } from "../theme";
+import { createOrder } from "../services/api";
 
-export default function CheckoutScreen({ navigation }) {
+export default function CheckoutScreen({ navigation, route }) {
   const [address, setAddress] = useState("");
+  const [phone, setPhone] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("mpesa"); // mpesa | card
   const [cardName, setCardName] = useState("");
   const [cardNumber, setCardNumber] = useState("");
   const [expiry, setExpiry] = useState("");
   const [cvv, setCvv] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleContinue = () => {
+  const handlePay = async () => {
     setError("");
     if (!address.trim()) return setError("Shipping address is required.");
-    if (!cardName.trim()) return setError("Name on card is required.");
-    if (cardNumber.replace(/\s/g, "").length < 12) return setError("Enter a valid card number.");
-    if (!expiry || !cvv) return setError("Enter the card expiry and CVV.");
 
-    navigation.navigate("ReviewOrder", {
-      shipping_address: address,
-      card_number: cardNumber,
-      card_name: cardName,
-      expiry,
-    });
+    if (paymentMethod === "mpesa") {
+      if (!phone.trim()) return setError("Phone number is required for M-Pesa.");
+    } else {
+      if (!cardName.trim() || cardNumber.replace(/\s/g, "").length < 12 || !expiry || !cvv) {
+        return setError("Please fill all card details.");
+      }
+    }
+
+    setLoading(true);
+    try {
+      const payload = {
+        payment_method: paymentMethod,
+        shipping_address: address,
+        phone: paymentMethod === "mpesa" ? phone : undefined,
+      };
+      const result = await createOrder(payload);
+
+      if (paymentMethod === "mpesa") {
+        // Navigate to a waiting screen or poll
+        navigation.navigate("OrderConfirmation", { order: result.order });
+      } else {
+        navigation.navigate("OrderConfirmation", { order: result.order });
+      }
+    } catch (e) {
+      setError(e.response?.data?.error || e.message || "Payment failed");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <ScrollView>
       <Screen>
         <Text style={font.h1}>Secure Checkout</Text>
-        <Text style={[font.muted, { marginBottom: spacing.lg }]}>Monthly Rest Pay available</Text>
 
         <ErrorText>{error}</ErrorText>
 
         <Text style={[font.h3, { marginBottom: spacing.sm }]}>Shipping Address</Text>
-        <Field
-          label="Address"
-          placeholder="123 Main St, City, State ZIP"
-          value={address}
-          onChangeText={setAddress}
-        />
+        <Field label="Address" placeholder="123 Main St, Nairobi" value={address} onChangeText={setAddress} />
 
-        <Text style={[font.h3, { marginBottom: spacing.sm, marginTop: spacing.md }]}>Debit / Credit Card</Text>
-        <Field label="Name on Card" placeholder="Alex Reader" value={cardName} onChangeText={setCardName} />
-        <Field
-          label="Card Number"
-          placeholder="1234 5678 9012 3456"
-          keyboardType="number-pad"
-          value={cardNumber}
-          onChangeText={setCardNumber}
-        />
-        <Field label="Expiry Date" placeholder="MM/YY" value={expiry} onChangeText={setExpiry} />
-        <Field label="CVV" placeholder="123" keyboardType="number-pad" secureTextEntry value={cvv} onChangeText={setCvv} />
+        <Text style={[font.h3, { marginTop: spacing.md, marginBottom: spacing.sm }]}>Payment Method</Text>
+        <View style={styles.methodRow}>
+          <TouchableOpacity
+            style={[styles.methodBtn, paymentMethod === "mpesa" && styles.methodActive]}
+            onPress={() => setPaymentMethod("mpesa")}
+          >
+            <Text style={paymentMethod === "mpesa" ? styles.methodTextActive : styles.methodText}>M-Pesa</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.methodBtn, paymentMethod === "card" && styles.methodActive]}
+            onPress={() => setPaymentMethod("card")}
+          >
+            <Text style={paymentMethod === "card" ? styles.methodTextActive : styles.methodText}>Card</Text>
+          </TouchableOpacity>
+        </View>
 
-        <PrimaryButton title="Review Order" onPress={handleContinue} />
+        {paymentMethod === "mpesa" ? (
+          <Field
+            label="M-Pesa Phone Number"
+            placeholder="07XXXXXXXX or 2547XXXXXXXX"
+            keyboardType="phone-pad"
+            value={phone}
+            onChangeText={setPhone}
+          />
+        ) : (
+          <>
+            <Field label="Name on Card" value={cardName} onChangeText={setCardName} />
+            <Field label="Card Number" keyboardType="number-pad" value={cardNumber} onChangeText={setCardNumber} />
+            <Field label="Expiry (MM/YY)" value={expiry} onChangeText={setExpiry} />
+            <Field label="CVV" keyboardType="number-pad" secureTextEntry value={cvv} onChangeText={setCvv} />
+          </>
+        )}
+
+        <PrimaryButton
+          title={paymentMethod === "mpesa" ? "Pay with M-Pesa" : "Pay with Card"}
+          onPress={handlePay}
+          loading={loading}
+        />
       </Screen>
     </ScrollView>
   );
 }
+<<<<<<< Updated upstream
+=======
+
+const styles = StyleSheet.create({
+  methodRow: { flexDirection: "row", marginBottom: spacing.md },
+  methodBtn: {
+    flex: 1,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: "center",
+    marginRight: 8,
+    borderRadius: 8,
+  },
+  methodActive: { backgroundColor: colors.navy, borderColor: colors.navy },
+  methodText: { color: colors.textMuted, fontWeight: "600" },
+  methodTextActive: { color: "#fff", fontWeight: "600" },
+});
+>>>>>>> Stashed changes
