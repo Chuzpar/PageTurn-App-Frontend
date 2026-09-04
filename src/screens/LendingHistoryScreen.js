@@ -1,16 +1,28 @@
 import React, { useCallback, useState } from "react";
 import { View, Text, FlatList, TouchableOpacity, StyleSheet } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
-import { Screen, EmptyState, Badge, PrimaryButton, ErrorText } from "../components/UI";
+import { Screen, EmptyState, Badge, ErrorText } from "../components/UI";
+import { ListRowSkeleton } from "../components/Skeleton";
 import { fetchMyLendingRequests, returnBook } from "../services/api";
+import { useToast } from "../context/ToastContext";
 import { colors, font, spacing, radii } from "../theme";
 
 const STATUS_TONE = { pending: "gold", approved: "success", rejected: "danger", returned: "gold" };
 
+function dueDateInfo(dueDateStr) {
+  const due = new Date(dueDateStr);
+  const daysLeft = Math.ceil((due - new Date()) / (1000 * 60 * 60 * 24));
+  if (daysLeft < 0) return { text: `Overdue by ${Math.abs(daysLeft)} day${Math.abs(daysLeft) === 1 ? "" : "s"}`, tone: colors.danger };
+  if (daysLeft <= 2) return { text: daysLeft === 0 ? "Due today" : `Due in ${daysLeft} day${daysLeft === 1 ? "" : "s"}`, tone: colors.danger };
+  return { text: `Due ${due.toLocaleDateString()}`, tone: colors.textMuted };
+}
+
 export default function LendingHistoryScreen() {
+  const { showToast } = useToast();
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [busyId, setBusyId] = useState(null);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -24,11 +36,16 @@ export default function LendingHistoryScreen() {
 
   const handleReturn = async (id) => {
     setError("");
+    setBusyId(id);
     try {
       await returnBook(id);
+      showToast("Return started — thanks for bringing it back!");
       load();
     } catch (e) {
       setError(e.message);
+      showToast(e.message, "error");
+    } finally {
+      setBusyId(null);
     }
   };
 
@@ -41,34 +58,47 @@ export default function LendingHistoryScreen() {
 
       <ErrorText>{error}</ErrorText>
 
-      <FlatList
-        data={requests}
-        keyExtractor={(item) => String(item.id)}
-        refreshing={loading}
-        onRefresh={load}
-        ListEmptyComponent={!loading ? <EmptyState text="No lending activity yet." /> : null}
-        renderItem={({ item }) => (
-          <View style={styles.card}>
-            <View style={styles.headerRow}>
-              <Text style={font.h3}>{item.book?.title}</Text>
-              <Badge text={item.status.toUpperCase()} tone={STATUS_TONE[item.status]} />
-            </View>
-            {item.status === "approved" && (
-              <>
-                <Text style={font.muted}>Due {new Date(item.due_date).toLocaleDateString()}</Text>
-                <TouchableOpacity onPress={() => handleReturn(item.id)} style={styles.returnBtn}>
-                  <Text style={styles.returnText}>Initiate Return</Text>
-                </TouchableOpacity>
-              </>
-            )}
-            {item.status === "pending" && <Text style={font.muted}>Awaiting Reviewing approval</Text>}
-            {item.status === "returned" && (
-              <Text style={font.muted}>Returned {new Date(item.returned_at).toLocaleDateString()}</Text>
-            )}
-            {item.status === "rejected" && <Text style={font.muted}>Request was declined</Text>}
-          </View>
-        )}
-      />
+      {loading && requests.length === 0 ? (
+        <ListRowSkeleton count={3} />
+      ) : (
+        <FlatList
+          data={requests}
+          keyExtractor={(item) => String(item.id)}
+          refreshing={loading}
+          onRefresh={load}
+          ListEmptyComponent={!loading ? <EmptyState text="No lending activity yet." icon="library-outline" /> : null}
+          renderItem={({ item }) => {
+            const due = item.status === "approved" ? dueDateInfo(item.due_date) : null;
+            return (
+              <View style={styles.card}>
+                <View style={styles.headerRow}>
+                  <Text style={font.h3}>{item.book?.title}</Text>
+                  <Badge text={item.status.toUpperCase()} tone={STATUS_TONE[item.status]} />
+                </View>
+                {item.status === "approved" && (
+                  <>
+                    <Text style={[font.muted, { color: due.tone, fontWeight: due.tone === colors.danger ? "700" : "400" }]}>
+                      {due.text}
+                    </Text>
+                    <TouchableOpacity
+                      onPress={() => handleReturn(item.id)}
+                      style={styles.returnBtn}
+                      disabled={busyId === item.id}
+                    >
+                      <Text style={styles.returnText}>{busyId === item.id ? "Returning..." : "Initiate Return"}</Text>
+                    </TouchableOpacity>
+                  </>
+                )}
+                {item.status === "pending" && <Text style={font.muted}>Awaiting admin approval</Text>}
+                {item.status === "returned" && (
+                  <Text style={font.muted}>Returned {new Date(item.returned_at).toLocaleDateString()}</Text>
+                )}
+                {item.status === "rejected" && <Text style={font.muted}>Request was declined</Text>}
+              </View>
+            );
+          }}
+        />
+      )}
     </Screen>
   );
 }
