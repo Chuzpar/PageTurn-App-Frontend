@@ -3,14 +3,12 @@ import { View, Text, FlatList, TouchableOpacity, StyleSheet } from "react-native
 import { useFocusEffect } from "@react-navigation/native";
 import { Screen, EmptyState, Badge, ErrorText } from "../../components/UI";
 import { adminFetchOrders, adminApproveOrder, adminRejectOrder, adminAdvanceOrder } from "../../services/api";
-import { useToast } from "../../context/ToastContext";
-import { colors, font, spacing, radii } from "../../theme";
+import { colors, font, formatCurrency, spacing, radii } from "../../theme";
 
 const STATUS_TONE = { paid: "gold", approved: "success", shipped: "success", delivered: "success", cancelled: "danger" };
 const NEXT_ACTION_LABEL = { approved: "Mark as Shipped", shipped: "Mark as Delivered" };
 
 export default function AdminPurchaseManagementScreen() {
-  const { showToast } = useToast();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -26,16 +24,14 @@ export default function AdminPurchaseManagementScreen() {
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
 
-  const runAction = async (fn, id, successMessage) => {
+  const runAction = async (fn, id) => {
     setBusyId(id);
     setError("");
     try {
       await fn(id);
-      showToast(successMessage);
       load();
     } catch (e) {
       setError(e.message);
-      showToast(e.message, "error");
     } finally {
       setBusyId(null);
     }
@@ -63,7 +59,7 @@ export default function AdminPurchaseManagementScreen() {
             {item.items.map((oi) => (
               <Text key={oi.id} style={font.muted}>{oi.book?.title} × {oi.quantity}</Text>
             ))}
-            <Text style={[font.h3, { marginTop: spacing.xs }]}>${item.total?.toFixed(2)}</Text>
+            <Text style={[font.h3, { marginTop: spacing.xs }]}>{formatCurrency(item.total)}</Text>
             <Text style={font.muted}>{new Date(item.created_at).toLocaleString()}</Text>
 
             {item.status === "paid" && (
@@ -71,14 +67,14 @@ export default function AdminPurchaseManagementScreen() {
                 <TouchableOpacity
                   style={[styles.actionBtn, styles.reject]}
                   disabled={busyId === item.id}
-                  onPress={() => runAction(adminRejectOrder, item.id, `Order #${item.id} rejected`)}
+                  onPress={() => runAction(adminRejectOrder, item.id)}
                 >
                   <Text style={styles.rejectText}>Reject</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.actionBtn, styles.approve]}
                   disabled={busyId === item.id}
-                  onPress={() => runAction(adminApproveOrder, item.id, `Order #${item.id} approved`)}
+                  onPress={() => runAction(adminApproveOrder, item.id)}
                 >
                   <Text style={styles.approveText}>Approve</Text>
                 </TouchableOpacity>
@@ -89,7 +85,7 @@ export default function AdminPurchaseManagementScreen() {
               <TouchableOpacity
                 style={[styles.actionBtn, styles.advance, { marginTop: spacing.sm }]}
                 disabled={busyId === item.id}
-                onPress={() => runAction(adminAdvanceOrder, item.id, `Order #${item.id} updated`)}
+                onPress={() => runAction(adminAdvanceOrder, item.id)}
               >
                 <Text style={styles.approveText}>{NEXT_ACTION_LABEL[item.status]}</Text>
               </TouchableOpacity>

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { loginUser, registerUser, fetchMe, updateProfile as updateProfileApi, setUnauthorizedHandler } from "../services/api";
+import { loginUser, registerUser, updateProfile as updateProfileApi } from "../services/api";
 
 const AuthContext = createContext(null);
 
@@ -12,14 +12,11 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     (async () => {
       try {
-        const savedToken = await AsyncStorage.getItem("pageturn_token");
-        if (savedToken) {
-          setToken(savedToken);
-          const { user: me } = await fetchMe();
-          setUser(me);
-        }
-      } catch (e) {
+        // Start each app launch at login so users can choose the correct account.
         await AsyncStorage.removeItem("pageturn_token");
+      } catch (e) {
+        setToken(null);
+        setUser(null);
       } finally {
         setIsLoading(false);
       }
@@ -46,14 +43,6 @@ export function AuthProvider({ children }) {
     await AsyncStorage.removeItem("pageturn_token");
     setToken(null);
     setUser(null);
-  }, []);
-
-  useEffect(() => {
-    setUnauthorizedHandler(() => {
-      AsyncStorage.removeItem("pageturn_token");
-      setToken(null);
-      setUser(null);
-    });
   }, []);
 
   const updateProfile = useCallback(async (payload) => {
