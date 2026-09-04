@@ -1,83 +1,40 @@
-import React, { useCallback, useState } from "react";
-import { View, Text, ScrollView, StyleSheet, Linking } from "react-native";
-import { useFocusEffect } from "@react-navigation/native";
-import { Screen, PrimaryButton, ErrorText, Card } from "../components/UI";
-import { fetchCart, checkout } from "../services/api";
-import { colors, font, spacing } from "../theme";
+import React, { useState } from "react";
+import { Text } from "react-native";
+import { Screen, PrimaryButton, ErrorText } from "../components/UI";
+import { checkout } from "../services/api";
+import { font, spacing } from "../theme";
 
 export default function ReviewOrderScreen({ route, navigation }) {
-  const { shipping_address } = route.params;
-  const [items, setItems] = useState([]);
-  const [subtotal, setSubtotal] = useState(0);
-  const [error, setError] = useState("");
-  const [placing, setPlacing] = useState(false);
+	const [error, setError] = useState("");
+	const [loading, setLoading] = useState(false);
+	const details = route.params || {};
 
-  useFocusEffect(
-    useCallback(() => {
-      fetchCart("purchase").then((data) => {
-        setItems(data.items);
-        setSubtotal(data.subtotal || 0);
-      });
-    }, [])
-  );
+	const placeOrder = async () => {
+		setLoading(true);
+		setError("");
+		try {
+			const result = await checkout({
+				shipping_address: details.shipping_address,
+				card_number: details.card_number,
+			});
+			navigation.navigate("OrderConfirmation", { order: result.order });
+		} catch (e) {
+			setError(e.message);
+		} finally {
+			setLoading(false);
+		}
+	};
 
-  const shippingFee = subtotal > 0 ? 4.99 : 0;
-  const tax = +(subtotal * 0.08).toFixed(2);
-  const total = +(subtotal + shippingFee + tax).toFixed(2);
-
-  const handlePlaceOrder = async () => {
-    setPlacing(true);
-    setError("");
-    try {
-      const { order, redirect_url } = await checkout({ shipping_address });
-      navigation.replace("OrderConfirmation", { order, redirectUrl: redirect_url });
-      await Linking.openURL(redirect_url);
-    } catch (e) {
-      setError(e.message);
-    } finally {
-      setPlacing(false);
-    }
-  };
-
-  return (
-    <ScrollView>
-      <Screen>
-        <Text style={font.h1}>Review Order</Text>
-
-        <Text style={[font.h3, { marginTop: spacing.md }]}>1. Shipping Address</Text>
-        <Card style={{ marginBottom: spacing.md, marginTop: spacing.xs }}>
-          <Text style={font.body}>{shipping_address}</Text>
-        </Card>
-
-        <Text style={font.h3}>2. Payment Method</Text>
-        <Card style={{ marginBottom: spacing.md, marginTop: spacing.xs }}>
-          <Text style={font.body}>Pesapal secure checkout</Text>
-        </Card>
-
-        <Text style={font.h3}>3. Order Summary</Text>
-        <Card style={{ marginTop: spacing.xs }}>
-          {items.map((item) => (
-            <View key={item.id} style={styles.itemRow}>
-              <Text style={font.body}>{item.book?.title} × {item.quantity}</Text>
-              <Text style={font.body}>${(item.book?.price * item.quantity).toFixed(2)}</Text>
-            </View>
-          ))}
-          <View style={styles.divider} />
-          <View style={styles.itemRow}><Text style={font.muted}>Subtotal</Text><Text style={font.muted}>${subtotal.toFixed(2)}</Text></View>
-          <View style={styles.itemRow}><Text style={font.muted}>Shipping</Text><Text style={font.muted}>${shippingFee.toFixed(2)}</Text></View>
-          <View style={styles.itemRow}><Text style={font.muted}>Tax</Text><Text style={font.muted}>${tax.toFixed(2)}</Text></View>
-          <View style={styles.divider} />
-          <View style={styles.itemRow}><Text style={font.h3}>Order Total</Text><Text style={font.h3}>${total.toFixed(2)}</Text></View>
-        </Card>
-
-        <ErrorText>{error}</ErrorText>
-        <PrimaryButton title="Place Order" onPress={handlePlaceOrder} loading={placing} style={{ marginTop: spacing.lg }} />
-      </Screen>
-    </ScrollView>
-  );
+	return (
+		<Screen>
+			<Text style={font.h1}>Review Order</Text>
+			<Text style={[font.muted, { marginBottom: spacing.lg }]}>Confirm your shipping details before placing the order.</Text>
+			<Text style={font.h3}>Shipping Address</Text>
+			<Text style={[font.body, { marginTop: spacing.xs, marginBottom: spacing.lg }]}>{details.shipping_address}</Text>
+			<Text style={font.h3}>Payment</Text>
+			<Text style={[font.body, { marginTop: spacing.xs, marginBottom: spacing.lg }]}>Card ending in {details.card_number?.replace(/\s/g, "").slice(-4)}</Text>
+			<ErrorText>{error}</ErrorText>
+			<PrimaryButton title="Place Order" onPress={placeOrder} loading={loading} />
+		</Screen>
+	);
 }
-
-const styles = StyleSheet.create({
-  itemRow: { flexDirection: "row", justifyContent: "space-between", paddingVertical: 4 },
-  divider: { height: 1, backgroundColor: colors.border, marginVertical: spacing.sm },
-});

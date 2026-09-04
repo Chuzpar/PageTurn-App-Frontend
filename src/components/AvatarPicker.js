@@ -33,7 +33,8 @@ export default function AvatarPicker({ value, onChange }) {
 
     setUploading(true);
     try {
-      const url = await uploadImageToCloudinary(result.assets[0].uri);
+      const asset = result.assets[0];
+      const url = await uploadImageToCloudinary(asset.uri, asset.fileName, asset.mimeType);
       onChange(url);
     } catch (e) {
       setError(e.message);
