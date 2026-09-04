@@ -77,7 +77,9 @@ export default function StoreScreen({ navigation }) {
           onRefresh={load}
           ListEmptyComponent={!loading ? <EmptyState text="No books match your search." /> : null}
           renderItem={({ item }) => (
-            <BookCard book={item} onPress={() => navigation.navigate("BookDetail", { bookId: item.id, mode: "purchase" })} />
+            <View style={styles.item}>
+              <BookCard book={item} onPress={() => navigation.navigate("BookDetail", { bookId: item.id, mode: "purchase" })} />
+            </View>
           )}
         />
       )}
@@ -86,6 +88,7 @@ export default function StoreScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
+  item: { width: "48%", marginBottom: spacing.md },
   genreRow: { flexDirection: "row", flexWrap: "wrap", marginBottom: spacing.md, gap: spacing.xs },
   pill: {
     paddingHorizontal: 12,

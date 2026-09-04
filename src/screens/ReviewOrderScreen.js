@@ -1,12 +1,12 @@
 import React, { useCallback, useState } from "react";
-import { View, Text, ScrollView, StyleSheet } from "react-native";
+import { View, Text, ScrollView, StyleSheet, Linking } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { Screen, PrimaryButton, ErrorText, Card } from "../components/UI";
 import { fetchCart, checkout } from "../services/api";
 import { colors, font, spacing } from "../theme";
 
 export default function ReviewOrderScreen({ route, navigation }) {
-  const { shipping_address, card_number } = route.params;
+  const { shipping_address } = route.params;
   const [items, setItems] = useState([]);
   const [subtotal, setSubtotal] = useState(0);
   const [error, setError] = useState("");
@@ -29,8 +29,9 @@ export default function ReviewOrderScreen({ route, navigation }) {
     setPlacing(true);
     setError("");
     try {
-      const { order } = await checkout({ shipping_address, card_number });
-      navigation.replace("OrderConfirmation", { order });
+      const { order, redirect_url } = await checkout({ shipping_address });
+      navigation.replace("OrderConfirmation", { order, redirectUrl: redirect_url });
+      await Linking.openURL(redirect_url);
     } catch (e) {
       setError(e.message);
     } finally {
@@ -50,7 +51,7 @@ export default function ReviewOrderScreen({ route, navigation }) {
 
         <Text style={font.h3}>2. Payment Method</Text>
         <Card style={{ marginBottom: spacing.md, marginTop: spacing.xs }}>
-          <Text style={font.body}>Card ending in {card_number.replace(/\s/g, "").slice(-4)}</Text>
+          <Text style={font.body}>Pesapal secure checkout</Text>
         </Card>
 
         <Text style={font.h3}>3. Order Summary</Text>

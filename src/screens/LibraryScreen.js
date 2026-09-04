@@ -7,6 +7,10 @@ import { BookGridSkeleton } from "../components/Skeleton";
 import { fetchBooks } from "../services/api";
 import { font, spacing } from "../theme";
 
+const styles = {
+  item: { width: "48%", marginBottom: spacing.md },
+};
+
 export default function LibraryScreen({ navigation }) {
   const [books, setBooks] = useState([]);
   const [query, setQuery] = useState("");
@@ -45,12 +49,12 @@ export default function LibraryScreen({ navigation }) {
           data={books}
           keyExtractor={(item) => String(item.id)}
           numColumns={2}
-          columnWrapperStyle={{ justifyContent: "space-between" }}
+          columnWrapperStyle={{ justifyContent: "center", gap: spacing.md }}
           refreshing={loading}
           onRefresh={load}
           ListEmptyComponent={!loading ? <EmptyState text="No books currently available to borrow." /> : null}
           renderItem={({ item }) => (
-            <View>
+            <View style={styles.item}>
               <BookCard
                 book={item}
                 onPress={() => navigation.navigate("BookDetail", { bookId: item.id, mode: "lending" })}

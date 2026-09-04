@@ -1,13 +1,19 @@
 import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, Image, StyleSheet } from "react-native";
 import StarRating from "./StarRating";
 import { colors, radii, spacing, font, shadow } from "../theme";
 
 export default function BookCard({ book, onPress, actionLabel, onAction }) {
+  const coverImage = book.cover_url || book.cover_image_url || book.cover_image || book.image_url || book.image;
+
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.85}>
       <View style={styles.cover}>
-        <Text style={styles.coverInitial}>{book.title?.[0] ?? "?"}</Text>
+        {coverImage ? (
+          <Image source={{ uri: coverImage }} style={styles.coverImage} resizeMode="cover" />
+        ) : (
+          <Text style={styles.coverInitial}>{book.title?.[0] ?? "?"}</Text>
+        )}
       </View>
       <Text numberOfLines={1} style={styles.title}>{book.title}</Text>
       <Text numberOfLines={1} style={styles.author}>{book.author}</Text>
@@ -28,7 +34,8 @@ export default function BookCard({ book, onPress, actionLabel, onAction }) {
 
 const styles = StyleSheet.create({
   card: {
-    width: "47%",
+    width: "100%",
+    minHeight: 232,
     backgroundColor: colors.card,
     borderRadius: radii.md,
     padding: spacing.sm,
@@ -44,7 +51,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginBottom: spacing.sm,
+    overflow: "hidden",
   },
+  coverImage: { width: "100%", height: "100%" },
   coverInitial: { color: colors.gold, fontSize: 34, fontWeight: "700" },
   title: { ...font.h3, fontSize: 14 },
   author: { ...font.muted, marginBottom: 4 },

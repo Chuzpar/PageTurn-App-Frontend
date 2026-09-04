@@ -11,6 +11,7 @@ export default function EditManuscriptScreen({ route, navigation }) {
   const [description, setDescription] = useState(book.description || "");
   const [price, setPrice] = useState(String(book.price ?? ""));
   const [genre, setGenre] = useState(book.genre || "");
+  const [coverUrl, setCoverUrl] = useState(book.cover_url || book.cover_image_url || "");
   const [stock, setStock] = useState(String(book.stock_for_lending ?? 0));
   const [availableForLending, setAvailableForLending] = useState((book.stock_for_lending ?? 0) > 0);
   const [error, setError] = useState("");
@@ -30,6 +31,7 @@ export default function EditManuscriptScreen({ route, navigation }) {
         description,
         price: parseFloat(price) || 0,
         genre: genre.trim() || null,
+        cover_url: coverUrl.trim() || null,
         stock_for_lending: availableForLending ? parseInt(stock, 10) || 0 : 0,
       });
       navigation.goBack();
@@ -52,6 +54,15 @@ export default function EditManuscriptScreen({ route, navigation }) {
         <Field label="Manuscript Description" multiline numberOfLines={4} value={description} onChangeText={setDescription} />
         <Field label="Retail Price ($)" keyboardType="decimal-pad" value={price} onChangeText={setPrice} />
         <Field label="Genre / Classification" value={genre} onChangeText={setGenre} />
+        <Field
+          label="Cloudinary Cover URL"
+          placeholder="https://res.cloudinary.com/..."
+          autoCapitalize="none"
+          autoCorrect={false}
+          keyboardType="url"
+          value={coverUrl}
+          onChangeText={setCoverUrl}
+        />
 
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: spacing.md }}>
           <Text style={font.h3}>Available for Lending</Text>

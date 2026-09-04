@@ -3,11 +3,13 @@ import { Text, ScrollView, View } from "react-native";
 import { Screen, Field, PrimaryButton, ErrorText } from "../components/UI";
 import { useAuth } from "../context/AuthContext";
 import { font, spacing, colors } from "../theme";
+import AvatarPicker from "../components/AvatarPicker";
 
 export default function AccountSettingsScreen({ navigation }) {
   const { user, updateProfile } = useAuth();
   const [fullName, setFullName] = useState(user?.full_name || "");
   const [email, setEmail] = useState(user?.email || "");
+  const [avatarUrl, setAvatarUrl] = useState(user?.avatar_url || "");
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
@@ -34,7 +36,7 @@ export default function AccountSettingsScreen({ navigation }) {
 
     setSaving(true);
     try {
-      const payload = { full_name: fullName.trim(), email: email.trim() };
+      const payload = { full_name: fullName.trim(), email: email.trim(), avatar_url: avatarUrl || null };
       if (newPassword) {
         payload.current_password = currentPassword;
         payload.new_password = newPassword;
@@ -59,6 +61,8 @@ export default function AccountSettingsScreen({ navigation }) {
 
         <ErrorText>{error}</ErrorText>
         {success ? <Text style={{ color: colors.success, marginBottom: spacing.sm }}>{success}</Text> : null}
+
+        <AvatarPicker value={avatarUrl} onChange={setAvatarUrl} />
 
         <Field label="Full Name" value={fullName} onChangeText={setFullName} />
         <Field label="Email Address" autoCapitalize="none" keyboardType="email-address" value={email} onChangeText={setEmail} />
