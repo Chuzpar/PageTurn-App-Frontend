@@ -220,3 +220,5 @@ export const searchOpenLibraryByAuthor = (
     .then((r) => r.data);
 
 export default api;
+
+export const mpesaStkPush = (payload) => api.post("/mpesa/stkpush", payload).then((r) => r.data);
