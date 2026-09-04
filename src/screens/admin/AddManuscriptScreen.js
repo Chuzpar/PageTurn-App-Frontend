@@ -10,6 +10,7 @@ export default function AddManuscriptScreen({ navigation }) {
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [genre, setGenre] = useState("");
+  const [coverUrl, setCoverUrl] = useState("");
   const [stock, setStock] = useState("1");
   const [availableForLending, setAvailableForLending] = useState(true);
   const [error, setError] = useState("");
@@ -29,6 +30,7 @@ export default function AddManuscriptScreen({ navigation }) {
         description,
         price: parseFloat(price) || 0,
         genre: genre.trim() || null,
+        cover_url: coverUrl.trim() || null,
         stock_for_lending: availableForLending ? parseInt(stock, 10) || 0 : 0,
       });
       navigation.goBack();
@@ -58,6 +60,15 @@ export default function AddManuscriptScreen({ navigation }) {
         />
         <Field label="Retail Price (KSh)" placeholder="1,299" keyboardType="decimal-pad" value={price} onChangeText={setPrice} />
         <Field label="Genre / Classification" placeholder="Classics" value={genre} onChangeText={setGenre} />
+        <Field
+          label="Cloudinary Cover URL"
+          placeholder="https://res.cloudinary.com/..."
+          autoCapitalize="none"
+          autoCorrect={false}
+          keyboardType="url"
+          value={coverUrl}
+          onChangeText={setCoverUrl}
+        />
 
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: spacing.md }}>
           <Text style={font.h3}>Available for Lending</Text>
