@@ -47,12 +47,16 @@ export default function CheckoutScreen({ navigation, route }) {
     } finally {
       setLoading(false);
     }
+    navigation.navigate("ReviewOrder", {
+      shipping_address: address,
+    });
   };
 
   return (
     <ScrollView>
       <Screen>
         <Text style={font.h1}>Secure Checkout</Text>
+        <Text style={[font.muted, { marginBottom: spacing.lg }]}>You will complete payment securely with Pesapal.</Text>
 
         <ErrorText>{error}</ErrorText>
 
@@ -97,6 +101,7 @@ export default function CheckoutScreen({ navigation, route }) {
           onPress={handlePay}
           loading={loading}
         />
+        <PrimaryButton title="Review Order" onPress={handleContinue} />
       </Screen>
     </ScrollView>
   );

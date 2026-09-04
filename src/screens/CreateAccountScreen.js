@@ -3,6 +3,7 @@ import { Text, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
 import { Screen, Field, PrimaryButton, SecondaryButton, ErrorText } from "../components/UI";
 import { useAuth } from "../context/AuthContext";
 import { font, spacing } from "../theme";
+import AvatarPicker from "../components/AvatarPicker";
 
 export default function CreateAccountScreen({ navigation }) {
   const { register } = useAuth();
@@ -10,6 +11,7 @@ export default function CreateAccountScreen({ navigation }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -25,7 +27,7 @@ export default function CreateAccountScreen({ navigation }) {
     }
     setLoading(true);
     try {
-      await register({ full_name: fullName, email: email.trim(), password, confirm_password: confirmPassword });
+      await register({ full_name: fullName, email: email.trim(), password, confirm_password: confirmPassword, avatar_url: avatarUrl || null });
     } catch (e) {
       setError(e.message);
     } finally {
@@ -39,6 +41,8 @@ export default function CreateAccountScreen({ navigation }) {
         <Screen style={{ justifyContent: "center" }}>
           <Text style={[font.h1, { marginBottom: spacing.xs }]}>Create Account</Text>
           <Text style={[font.muted, { marginBottom: spacing.xl }]}>Join the reading and lending library</Text>
+
+          <AvatarPicker value={avatarUrl} onChange={setAvatarUrl} />
 
           <ErrorText>{error}</ErrorText>
           <Field label="Full Name" placeholder="Jane Reader" value={fullName} onChangeText={setFullName} />

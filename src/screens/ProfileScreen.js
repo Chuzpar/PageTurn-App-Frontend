@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text } from "react-native";
+import { View, Text, Image } from "react-native";
 import { Screen, Card, SecondaryButton, PrimaryButton, Badge } from "../components/UI";
 import { useAuth } from "../context/AuthContext";
 import { font, spacing } from "../theme";
@@ -12,6 +12,7 @@ export default function ProfileScreen({ navigation }) {
       <Text style={font.h1}>Profile</Text>
       <Card style={{ marginTop: spacing.md, marginBottom: spacing.lg }}>
         <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
+          {user?.avatar_url ? <Image source={{ uri: user.avatar_url }} style={styles.avatar} /> : null}
           <View>
             <Text style={font.h3}>{user?.full_name}</Text>
             <Text style={font.muted}>{user?.email}</Text>
@@ -44,3 +45,7 @@ export default function ProfileScreen({ navigation }) {
     </Screen>
   );
 }
+
+const styles = {
+  avatar: { width: 56, height: 56, borderRadius: 28, marginRight: spacing.md },
+};
