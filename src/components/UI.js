@@ -1,8 +1,17 @@
 import React from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Platform } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+  Platform,
+} from "react-native";
 import { colors, radii, spacing, font, shadow } from "../theme";
 import { Ionicons } from "@expo/vector-icons";
 
+// Cap content to phone width on web so the 2-column grid stays centered
 const WEB_MAX_WIDTH = 480;
 
 export function Screen({ children, style }) {
@@ -21,7 +30,11 @@ export function PrimaryButton({ title, onPress, loading, disabled, style }) {
       activeOpacity={0.8}
       style={[styles.primaryButton, (disabled || loading) && styles.disabled, style]}
     >
-      {loading ? <ActivityIndicator color={colors.white} /> : <Text style={styles.primaryButtonText}>{title}</Text>}
+      {loading ? (
+        <ActivityIndicator color={colors.white} />
+      ) : (
+        <Text style={styles.primaryButtonText}>{title}</Text>
+      )}
     </TouchableOpacity>
   );
 }
@@ -38,7 +51,11 @@ export function Field({ label, ...props }) {
   return (
     <View style={{ marginBottom: spacing.md }}>
       {label ? <Text style={styles.label}>{label}</Text> : null}
-      <TextInput placeholderTextColor={colors.textMuted} style={styles.input} {...props} />
+      <TextInput
+        placeholderTextColor={colors.textMuted}
+        style={styles.input}
+        {...props}
+      />
     </View>
   );
 }
@@ -55,14 +72,24 @@ export function ErrorText({ children }) {
 export function EmptyState({ text, icon = "book-outline" }) {
   return (
     <View style={styles.emptyState}>
-      <Ionicons name={icon} size={32} color={colors.border} style={{ marginBottom: spacing.sm }} />
+      <Ionicons
+        name={icon}
+        size={32}
+        color={colors.border}
+        style={{ marginBottom: spacing.sm }}
+      />
       <Text style={font.muted}>{text}</Text>
     </View>
   );
 }
 
 export function Badge({ text, tone = "gold" }) {
-  const bg = tone === "gold" ? colors.gold : tone === "success" ? colors.success : colors.danger;
+  const bg =
+    tone === "gold"
+      ? colors.gold
+      : tone === "success"
+      ? colors.success
+      : colors.danger;
   return (
     <View style={[styles.badge, { backgroundColor: bg }]}>
       <Text style={styles.badgeText}>{text}</Text>
