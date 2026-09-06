@@ -1,25 +1,43 @@
-import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+} from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { loginUser, registerUser, fetchMe, updateProfile as updateProfileApi, setUnauthorizedHandler } from "../services/api";
+import {
+  loginUser,
+  registerUser,
+  updateProfile as updateProfileApi,
+  fetchMe,
+} from "../services/api";
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
-  const [isLoading, setIsLoading] = useState(true); // restoring session on app boot
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
       try {
-        const savedToken = await AsyncStorage.getItem("pageturn_token");
-        if (savedToken) {
-          setToken(savedToken);
-          const { user: me } = await fetchMe();
-          setUser(me);
+        const stored = await AsyncStorage.getItem("pageturn_token");
+        if (stored) {
+          setToken(stored);
+          try {
+            const data = await fetchMe();
+            setUser(data.user || data);
+          } catch {
+            await AsyncStorage.removeItem("pageturn_token");
+            setToken(null);
+            setUser(null);
+          }
         }
-      } catch (e) {
-        await AsyncStorage.removeItem("pageturn_token");
+      } catch {
+        setToken(null);
+        setUser(null);
       } finally {
         setIsLoading(false);
       }
@@ -27,7 +45,12 @@ export function AuthProvider({ children }) {
   }, []);
 
   const login = useCallback(async (email, password) => {
-    const { token: newToken, user: loggedInUser } = await loginUser({ email, password });
+    const data = await loginUser({
+      email: email.trim().toLowerCase(),
+      password,
+    });
+    const newToken = data.token;
+    const loggedInUser = data.user;
     await AsyncStorage.setItem("pageturn_token", newToken);
     setToken(newToken);
     setUser(loggedInUser);
@@ -35,7 +58,12 @@ export function AuthProvider({ children }) {
   }, []);
 
   const register = useCallback(async (payload) => {
-    const { token: newToken, user: newUser } = await registerUser(payload);
+    const data = await registerUser({
+      ...payload,
+      email: (payload.email || "").trim().toLowerCase(),
+    });
+    const newToken = data.token;
+    const newUser = data.user;
     await AsyncStorage.setItem("pageturn_token", newToken);
     setToken(newToken);
     setUser(newUser);
@@ -48,17 +76,9 @@ export function AuthProvider({ children }) {
     setUser(null);
   }, []);
 
-  useEffect(() => {
-    setUnauthorizedHandler(() => {
-      AsyncStorage.removeItem("pageturn_token");
-      setToken(null);
-      setUser(null);
-    });
-  }, []);
-
-  // --- Sprint 5 - Task 5: Build Account Settings Screen (backing logic) ---
   const updateProfile = useCallback(async (payload) => {
-    const { user: updated } = await updateProfileApi(payload);
+    const data = await updateProfileApi(payload);
+    const updated = data.user || data;
     setUser(updated);
     return updated;
   }, []);
@@ -67,7 +87,7 @@ export function AuthProvider({ children }) {
     user,
     token,
     isLoading,
-    isAuthenticated: !!token,
+    isAuthenticated: !!(token && user),
     isAdmin: user?.role === "admin",
     login,
     register,
@@ -75,7 +95,9 @@ export function AuthProvider({ children }) {
     updateProfile,
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+  );
 }
 
 export function useAuth() {

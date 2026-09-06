@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from "react";
-import { View, Text, FlatList, Image, StyleSheet } from "react-native";
+import { View, Text, FlatList, StyleSheet } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import {
   Screen,
@@ -12,11 +12,11 @@ import {
 import BookCard from "../components/BookCard";
 import AvatarPicker from "../components/AvatarPicker";
 import { useAuth } from "../context/AuthContext";
-import { fetchFavorites, updateProfile } from "../services/api";
-import { font, spacing, colors, radii } from "../theme";
+import { fetchFavorites } from "../services/api";
+import { font, spacing } from "../theme";
 
 export default function ProfileScreen({ navigation }) {
-  const { user, logout, isAdmin, updateProfile: setUserProfile } = useAuth();
+  const { user, logout, isAdmin, updateProfile } = useAuth();
   const [favorites, setFavorites] = useState([]);
   const [loadingFavs, setLoadingFavs] = useState(false);
 
@@ -25,9 +25,14 @@ export default function ProfileScreen({ navigation }) {
     setLoadingFavs(true);
     try {
       const data = await fetchFavorites();
-      const list = data.favorites || data || [];
+      const list = Array.isArray(data?.favorites)
+        ? data.favorites
+        : Array.isArray(data)
+        ? data
+        : [];
       setFavorites(list);
-    } catch {
+    } catch (e) {
+      console.warn("favorites error", e.message);
       setFavorites([]);
     } finally {
       setLoadingFavs(false);
@@ -42,10 +47,7 @@ export default function ProfileScreen({ navigation }) {
 
   const onAvatarChange = async (url) => {
     try {
-      const updated = await updateProfile({ avatar_url: url });
-      if (setUserProfile && updated?.user) {
-        // AuthContext may expose updateProfile already
-      }
+      await updateProfile({ avatar_url: url });
     } catch (e) {
       console.warn(e.message);
     }
@@ -106,21 +108,18 @@ export default function ProfileScreen({ navigation }) {
           ) : (
             <FlatList
               data={favorites}
-              keyExtractor={(item) =>
-                String(item.id || item.book?.id)
-              }
+              keyExtractor={(item) => String(item.id || item.book?.id)}
               numColumns={2}
               columnWrapperStyle={{ justifyContent: "space-between" }}
               scrollEnabled={false}
               renderItem={({ item }) => {
                 const book = item.book || item;
+                if (!book?.id) return null;
                 return (
                   <BookCard
                     book={book}
                     onPress={() =>
-                      navigation.navigate("BookDetail", {
-                        bookId: book.id,
-                      })
+                      navigation.navigate("BookDetail", { bookId: book.id })
                     }
                   />
                 );
