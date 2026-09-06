@@ -9,7 +9,6 @@ const getApiBaseUrl = () => {
     return process.env.EXPO_PUBLIC_API_URL.replace(/\/$/, "");
   }
 
-  // Browser (Vercel / any live host)
   if (typeof window !== "undefined" && window.location?.hostname) {
     const host = window.location.hostname;
     if (host !== "localhost" && host !== "127.0.0.1") {
@@ -66,6 +65,7 @@ api.interceptors.response.use(
   }
 );
 
+// ---------- Auth ----------
 export const registerUser = (payload) =>
   api.post("/auth/register", payload).then((r) => r.data);
 
@@ -78,6 +78,7 @@ export const fetchMe = () =>
 export const updateProfile = (payload) =>
   api.put("/auth/profile", payload).then((r) => r.data);
 
+// ---------- Books ----------
 export const fetchBooks = (params = {}) =>
   api.get("/books", { params }).then((r) => r.data);
 
@@ -87,6 +88,26 @@ export const fetchBook = (id) =>
 export const fetchGenres = () =>
   api.get("/books/genres").then((r) => r.data);
 
+export const fetchReviews = (bookId) =>
+  api.get(`/books/${bookId}/reviews`).then((r) => r.data);
+
+export const submitReview = (bookId, payload) =>
+  api.post(`/books/${bookId}/reviews`, payload).then((r) => r.data);
+
+// ---------- Favorites (fixes "addFavorite is not a function") ----------
+export const addFavorite = (bookId) =>
+  api.post(`/books/${bookId}/favorite`).then((r) => r.data);
+
+export const removeFavorite = (bookId) =>
+  api.delete(`/books/${bookId}/favorite`).then((r) => r.data);
+
+export const fetchFavorites = () =>
+  api.get("/books/favorites").then((r) => r.data);
+
+export const toggleFavorite = (bookId) =>
+  api.post(`/books/${bookId}/favorite`).then((r) => r.data);
+
+// ---------- Cart ----------
 export const fetchCart = (type = "purchase") =>
   api.get("/cart", { params: { type } }).then((r) => r.data);
 
@@ -99,6 +120,7 @@ export const removeFromCart = (itemId) =>
 export const updateCartItem = (itemId, payload) =>
   api.patch(`/cart/items/${itemId}`, payload).then((r) => r.data);
 
+// ---------- Orders / Checkout ----------
 export const checkout = (payload) =>
   api.post("/orders/checkout", payload).then((r) => r.data);
 
@@ -108,6 +130,17 @@ export const fetchOrders = () =>
 export const fetchOrder = (id) =>
   api.get(`/orders/${id}`).then((r) => r.data);
 
+// Pesapal (used by ReviewOrder / Checkout)
+export const initiatePesapalPayment = (payload) =>
+  api.post("/payments/pesapal/initiate", payload).then((r) => r.data);
+
+export const verifyPesapalPayment = (params) =>
+  api.get("/payments/pesapal/status", { params }).then((r) => r.data);
+
+export const mpesaStkPush = (payload) =>
+  api.post("/orders/checkout", payload).then((r) => r.data);
+
+// ---------- Lending ----------
 export const submitLendingRequests = () =>
   api.post("/lending/requests").then((r) => r.data);
 
@@ -118,18 +151,7 @@ export const fetchMyLendingRequests = (status) =>
     })
     .then((r) => r.data);
 
-export const toggleFavorite = (bookId) =>
-  api.post(`/books/${bookId}/favorite`).then((r) => r.data);
-
-export const fetchFavorites = () =>
-  api.get("/books/favorites").then((r) => r.data);
-
-export const submitReview = (bookId, payload) =>
-  api.post(`/books/${bookId}/reviews`, payload).then((r) => r.data);
-
-export const fetchReviews = (bookId) =>
-  api.get(`/books/${bookId}/reviews`).then((r) => r.data);
-
+// ---------- Admin ----------
 export const adminFetchBooks = () =>
   api.get("/admin/books").then((r) => r.data);
 
@@ -150,9 +172,7 @@ export const adminFetchLendingRequests = (status = "pending") =>
     .then((r) => r.data);
 
 export const adminApproveLending = (id) =>
-  api
-    .post(`/admin/lending-requests/${id}/approve`)
-    .then((r) => r.data);
+  api.post(`/admin/lending-requests/${id}/approve`).then((r) => r.data);
 
 export const adminRejectLending = (id, notes) =>
   api
@@ -167,19 +187,13 @@ export const adminFetchOrders = (status) =>
     .then((r) => r.data);
 
 export const adminApproveOrder = (id) =>
-  api
-    .post(`/admin/orders/${id}/approve`)
-    .then((r) => r.data);
+  api.post(`/admin/orders/${id}/approve`).then((r) => r.data);
 
 export const adminRejectOrder = (id) =>
-  api
-    .post(`/admin/orders/${id}/reject`)
-    .then((r) => r.data);
+  api.post(`/admin/orders/${id}/reject`).then((r) => r.data);
 
 export const adminAdvanceOrder = (id) =>
-  api
-    .post(`/admin/orders/${id}/advance`)
-    .then((r) => r.data);
+  api.post(`/admin/orders/${id}/advance`).then((r) => r.data);
 
 export const adminFetchDashboard = () =>
   api.get("/admin/dashboard").then((r) => r.data);
