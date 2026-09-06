@@ -1,33 +1,25 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { loginUser, registerUser, updateProfile as updateProfileApi, fetchMe } from "../services/api";
+import { loginUser, registerUser, fetchMe, updateProfile as updateProfileApi, setUnauthorizedHandler } from "../services/api";
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true); // restoring session on app boot
 
   useEffect(() => {
     (async () => {
       try {
-        const stored = await AsyncStorage.getItem("pageturn_token");
-        if (stored) {
-          setToken(stored);
-          try {
-            const { user: me } = await fetchMe();
-            setUser(me);
-          } catch {
-            // Token invalid/expired
-            await AsyncStorage.removeItem("pageturn_token");
-            setToken(null);
-            setUser(null);
-          }
+        const savedToken = await AsyncStorage.getItem("pageturn_token");
+        if (savedToken) {
+          setToken(savedToken);
+          const { user: me } = await fetchMe();
+          setUser(me);
         }
-      } catch {
-        setToken(null);
-        setUser(null);
+      } catch (e) {
+        await AsyncStorage.removeItem("pageturn_token");
       } finally {
         setIsLoading(false);
       }
@@ -56,6 +48,15 @@ export function AuthProvider({ children }) {
     setUser(null);
   }, []);
 
+  useEffect(() => {
+    setUnauthorizedHandler(() => {
+      AsyncStorage.removeItem("pageturn_token");
+      setToken(null);
+      setUser(null);
+    });
+  }, []);
+
+  // --- Sprint 5 - Task 5: Build Account Settings Screen (backing logic) ---
   const updateProfile = useCallback(async (payload) => {
     const { user: updated } = await updateProfileApi(payload);
     setUser(updated);
@@ -66,7 +67,7 @@ export function AuthProvider({ children }) {
     user,
     token,
     isLoading,
-    isAuthenticated: !!token && !!user,
+    isAuthenticated: !!token,
     isAdmin: user?.role === "admin",
     login,
     register,

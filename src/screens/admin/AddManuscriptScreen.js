@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-import { Text, ScrollView, Switch, View, FlatList, TouchableOpacity, StyleSheet } from "react-native";
+import { Text, ScrollView, Switch, View } from "react-native";
 import { Screen, Field, PrimaryButton, ErrorText } from "../../components/UI";
-import { adminCreateBook, searchOpenLibraryBooks } from "../../services/api";
-import { font, spacing, colors, radii } from "../../theme";
+import CoverImagePicker from "../../components/CoverImagePicker";
+import { adminCreateBook } from "../../services/api";
+import { font, spacing } from "../../theme";
 
 export default function AddManuscriptScreen({ navigation }) {
   const [title, setTitle] = useState("");
@@ -10,8 +11,8 @@ export default function AddManuscriptScreen({ navigation }) {
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [genre, setGenre] = useState("");
-  const [coverUrl, setCoverUrl] = useState("");
   const [stock, setStock] = useState("1");
+  const [coverUrl, setCoverUrl] = useState(null);
   const [availableForLending, setAvailableForLending] = useState(true);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
@@ -30,7 +31,7 @@ export default function AddManuscriptScreen({ navigation }) {
         description,
         price: parseFloat(price) || 0,
         genre: genre.trim() || null,
-        cover_url: coverUrl.trim() || null,
+        cover_url: coverUrl,
         stock_for_lending: availableForLending ? parseInt(stock, 10) || 0 : 0,
       });
       navigation.goBack();
@@ -48,6 +49,7 @@ export default function AddManuscriptScreen({ navigation }) {
         <Text style={[font.muted, { marginBottom: spacing.lg }]}>Curator submission form</Text>
 
         <ErrorText>{error}</ErrorText>
+        <CoverImagePicker value={coverUrl} onChange={setCoverUrl} />
         <Field label="Book Title" placeholder="The Odyssey" value={title} onChangeText={setTitle} />
         <Field label="Author" placeholder="Homer" value={author} onChangeText={setAuthor} />
         <Field
@@ -58,17 +60,8 @@ export default function AddManuscriptScreen({ navigation }) {
           value={description}
           onChangeText={setDescription}
         />
-        <Field label="Retail Price (KSh)" placeholder="1,299" keyboardType="decimal-pad" value={price} onChangeText={setPrice} />
+        <Field label="Retail Price ($)" placeholder="12.99" keyboardType="decimal-pad" value={price} onChangeText={setPrice} />
         <Field label="Genre / Classification" placeholder="Classics" value={genre} onChangeText={setGenre} />
-        <Field
-          label="Cloudinary Cover URL"
-          placeholder="https://res.cloudinary.com/..."
-          autoCapitalize="none"
-          autoCorrect={false}
-          keyboardType="url"
-          value={coverUrl}
-          onChangeText={setCoverUrl}
-        />
 
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: spacing.md }}>
           <Text style={font.h3}>Available for Lending</Text>

@@ -18,25 +18,25 @@ export const radii = { sm: 6, md: 10, lg: 16, pill: 999 };
 
 export const shadow = {
   sm: {
-	shadowColor: "#000",
-	shadowOpacity: 0.04,
-	shadowRadius: 6,
-	shadowOffset: { width: 0, height: 2 },
-	elevation: 1,
+    shadowColor: "#000",
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 1,
   },
   md: {
-	shadowColor: "#000",
-	shadowOpacity: 0.12,
-	shadowRadius: 10,
-	shadowOffset: { width: 0, height: 4 },
-	elevation: 4,
+    shadowColor: "#000",
+    shadowOpacity: 0.12,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 4,
   },
   lg: {
-	shadowColor: "#000",
-	shadowOpacity: 0.2,
-	shadowRadius: 16,
-	shadowOffset: { width: 0, height: 6 },
-	elevation: 8,
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 8,
   },
 };
 

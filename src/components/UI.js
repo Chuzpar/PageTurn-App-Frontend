@@ -1,10 +1,16 @@
 import React from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Platform } from "react-native";
 import { colors, radii, spacing, font, shadow } from "../theme";
 import { Ionicons } from "@expo/vector-icons";
 
+const WEB_MAX_WIDTH = 480;
+
 export function Screen({ children, style }) {
-  return <View style={[styles.screen, style]}>{children}</View>;
+  return (
+    <View style={styles.screenOuter}>
+      <View style={[styles.screen, style]}>{children}</View>
+    </View>
+  );
 }
 
 export function PrimaryButton({ title, onPress, loading, disabled, style }) {
@@ -65,7 +71,17 @@ export function Badge({ text, tone = "gold" }) {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background, padding: spacing.md },
+  screenOuter:
+    Platform.OS === "web"
+      ? { flex: 1, alignItems: "center", backgroundColor: colors.background }
+      : { flex: 1 },
+  screen: {
+    flex: 1,
+    width: "100%",
+    maxWidth: Platform.OS === "web" ? WEB_MAX_WIDTH : undefined,
+    backgroundColor: colors.background,
+    padding: spacing.md,
+  },
   primaryButton: {
     backgroundColor: colors.navy,
     paddingVertical: 14,

@@ -1,86 +1,88 @@
-import React from 'react';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { Ionicons } from '@expo/vector-icons';
+import React from "react";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { Ionicons } from "@expo/vector-icons";
+import { Platform } from "react-native";
 
-// Import admin screens
-import AdminDashboardScreen from '../screens/admin/AdminDashboardScreen';
-import AdminBooksScreen from '../screens/admin/AdminBooksScreen';
-import AdminLendingRequestsScreen from '../screens/admin/AdminLendingRequestsScreen';
-import AdminPurchaseManagementScreen from '../screens/admin/AdminPurchaseManagementScreen';
-import AddManuscriptScreen from '../screens/admin/AddManuscriptScreen';
-import EditManuscriptScreen from '../screens/admin/EditManuscriptScreen';
+import AdminDashboardScreen from "../screens/admin/AdminDashboardScreen";
+import AdminBooksScreen from "../screens/admin/AdminBooksScreen";
+import AddManuscriptScreen from "../screens/admin/AddManuscriptScreen";
+import EditManuscriptScreen from "../screens/admin/EditManuscriptScreen";
+import AdminLendingRequestsScreen from "../screens/admin/AdminLendingRequestsScreen";
+import AdminPurchaseManagementScreen from "../screens/admin/AdminPurchaseManagementScreen";
+import ProfileScreen from "../screens/ProfileScreen";
+import AccountSettingsScreen from "../screens/AccountSettingsScreen";
+import { colors } from "../theme";
 
-const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
+const Tab = createBottomTabNavigator();
 
-const AdminTabScreens = () => {
+function DashboardStack() {
+  return (
+    <Stack.Navigator screenOptions={{ headerTintColor: colors.navy }}>
+      <Stack.Screen name="AdminDashboardMain" component={AdminDashboardScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="AddManuscript" component={AddManuscriptScreen} options={{ title: "Add New Manuscript" }} />
+      <Stack.Screen name="AdminBooks" component={AdminBooksScreen} options={{ title: "Manage Books" }} />
+      <Stack.Screen name="EditManuscript" component={EditManuscriptScreen} options={{ title: "Edit Manuscript" }} />
+      <Stack.Screen name="AdminLendingRequests" component={AdminLendingRequestsScreen} options={{ title: "Lending Requests" }} />
+      <Stack.Screen name="AdminOrders" component={AdminPurchaseManagementScreen} options={{ title: "Purchase Orders" }} />
+    </Stack.Navigator>
+  );
+}
+
+function BooksStack() {
+  return (
+    <Stack.Navigator screenOptions={{ headerTintColor: colors.navy }}>
+      <Stack.Screen name="AdminBooksMain" component={AdminBooksScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="AddManuscript" component={AddManuscriptScreen} options={{ title: "Add New Manuscript" }} />
+      <Stack.Screen name="EditManuscript" component={EditManuscriptScreen} options={{ title: "Edit Manuscript" }} />
+    </Stack.Navigator>
+  );
+}
+
+function LendingStack() {
+  return (
+    <Stack.Navigator screenOptions={{ headerTintColor: colors.navy }}>
+      <Stack.Screen name="AdminLendingMain" component={AdminLendingRequestsScreen} options={{ headerShown: false }} />
+    </Stack.Navigator>
+  );
+}
+
+function OrdersStack() {
+  return (
+    <Stack.Navigator screenOptions={{ headerTintColor: colors.navy }}>
+      <Stack.Screen name="AdminOrdersMain" component={AdminPurchaseManagementScreen} options={{ headerShown: false }} />
+    </Stack.Navigator>
+  );
+}
+
+function AccountStack() {
+  return (
+    <Stack.Navigator screenOptions={{ headerTintColor: colors.navy }}>
+      <Stack.Screen name="ProfileMain" component={ProfileScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="AccountSettings" component={AccountSettingsScreen} options={{ title: "Account Settings" }} />
+    </Stack.Navigator>
+  );
+}
+
+const ICONS = { Dashboard: "grid", Books: "library", Lending: "swap-horizontal", Orders: "receipt", Account: "person-circle" };
+
+export default function AdminTabs() {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
-        tabBarIcon: ({ focused, color, size }) => {
-          let iconName;
-
-          if (route.name === 'Dashboard') {
-            iconName = focused ? 'speedometer' : 'speedometer-outline';
-          } else if (route.name === 'Books') {
-            iconName = focused ? 'book' : 'book-outline';
-          } else if (route.name === 'Orders') {
-            iconName = focused ? 'receipt' : 'receipt-outline';
-          } else if (route.name === 'Lending') {
-            iconName = focused ? 'people' : 'people-outline';
-          } else if (route.name === 'Add Book') {
-            iconName = focused ? 'add-circle' : 'add-circle-outline';
-          }
-
-          return <Ionicons name={iconName} size={size} color={color} />;
-        },
-        tabBarActiveTintColor: '#1F2F50',
-        tabBarInactiveTintColor: '#8B94A8',
-        headerStyle: {
-          backgroundColor: '#1F2F50',
-        },
-        headerTintColor: '#fff',
-        headerTitleStyle: {
-          fontWeight: 'bold',
-        },
+        headerShown: false,
+        tabBarActiveTintColor: colors.navy,
+        tabBarInactiveTintColor: colors.textMuted,
+        tabBarIcon: ({ color, size }) => <Ionicons name={ICONS[route.name]} size={size} color={color} />,
+        tabBarStyle: Platform.OS === "web" ? { maxWidth: 480, alignSelf: "center", width: "100%" } : undefined,
       })}
     >
-      <Tab.Screen 
-        name="Dashboard" 
-        component={AdminDashboardScreen} 
-        options={{ title: 'Admin Dashboard' }}
-      />
-      <Tab.Screen 
-        name="Books" 
-        component={AdminBooksScreen} 
-        options={{ title: 'Manage Books' }}
-      />
-      <Tab.Screen 
-        name="Orders" 
-        component={AdminPurchaseManagementScreen} 
-        options={{ title: 'Order Management' }}
-      />
-      <Tab.Screen 
-        name="Lending" 
-        component={AdminLendingRequestsScreen} 
-        options={{ title: 'Lending Requests' }}
-      />
-      <Tab.Screen 
-        name="Add Book" 
-        component={AddManuscriptScreen} 
-        options={{ title: 'Add New Book' }}
-      />
+      <Tab.Screen name="Dashboard" component={DashboardStack} />
+      <Tab.Screen name="Books" component={BooksStack} />
+      <Tab.Screen name="Lending" component={LendingStack} />
+      <Tab.Screen name="Orders" component={OrdersStack} />
+      <Tab.Screen name="Account" component={AccountStack} />
     </Tab.Navigator>
   );
-};
-
-const AdminTabs = () => (
-  <Stack.Navigator>
-    <Stack.Screen name="AdminHome" component={AdminTabScreens} options={{ headerShown: false }} />
-    <Stack.Screen name="AddManuscript" component={AddManuscriptScreen} options={{ title: 'Add New Book' }} />
-    <Stack.Screen name="EditManuscript" component={EditManuscriptScreen} options={{ title: 'Edit Book' }} />
-  </Stack.Navigator>
-);
-
-export default AdminTabs;
+}
