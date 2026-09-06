@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { View, Text, FlatList } from "react-native";
+import { View, Text, FlatList, StyleSheet } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { Screen, Field, EmptyState } from "../components/UI";
 import BookCard from "../components/BookCard";
@@ -34,9 +34,13 @@ export default function LibraryScreen({ navigation }) {
 
   return (
     <Screen>
-      <Text style={font.h1}>PageTurn Library</Text>
-      <Text style={[font.muted, { marginBottom: spacing.md }]}>Community lending catalogue</Text>
-      <Field placeholder="Search the lending catalogue..." value={query} onChangeText={setQuery} />
+      <Text style={[font.h1, styles.centerText]}>PageTurn Library</Text>
+      <Text style={[font.muted, styles.subtitle]}>Community lending catalogue</Text>
+      <Field
+        placeholder="Search the lending catalogue..."
+        value={query}
+        onChangeText={setQuery}
+      />
 
       {loading && books.length === 0 ? (
         <BookGridSkeleton />
@@ -45,20 +49,38 @@ export default function LibraryScreen({ navigation }) {
           data={books}
           keyExtractor={(item) => String(item.id)}
           numColumns={2}
-          columnWrapperStyle={{ justifyContent: "space-between" }}
+          columnWrapperStyle={styles.row}
+          contentContainerStyle={styles.list}
           refreshing={loading}
           onRefresh={load}
-          ListEmptyComponent={!loading ? <EmptyState text="No books currently available to borrow." /> : null}
+          ListEmptyComponent={
+            !loading ? (
+              <EmptyState text="No books currently available to borrow." />
+            ) : null
+          }
           renderItem={({ item }) => (
-            <View>
-              <BookCard
-                book={item}
-                onPress={() => navigation.navigate("BookDetail", { bookId: item.id, mode: "lending" })}
-              />
-            </View>
+            <BookCard
+              book={item}
+              onPress={() =>
+                navigation.navigate("BookDetail", {
+                  bookId: item.id,
+                  mode: "lending",
+                })
+              }
+            />
           )}
         />
       )}
     </Screen>
   );
 }
+
+const styles = StyleSheet.create({
+  centerText: { textAlign: "center" },
+  subtitle: { textAlign: "center", marginBottom: spacing.md },
+  list: { paddingBottom: spacing.xl },
+  row: {
+    justifyContent: "space-between",
+    marginBottom: spacing.sm,
+  },
+});
