@@ -1,20 +1,30 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { loginUser, registerUser, updateProfile as updateProfileApi } from "../services/api";
+import { loginUser, registerUser, updateProfile as updateProfileApi, fetchMe } from "../services/api";
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
-  const [isLoading, setIsLoading] = useState(true); // restoring session on app boot
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
       try {
-        // Start each app launch at login so users can choose the correct account.
-        await AsyncStorage.removeItem("pageturn_token");
-      } catch (e) {
+        const stored = await AsyncStorage.getItem("pageturn_token");
+        if (stored) {
+          setToken(stored);
+          try {
+            const { user: me } = await fetchMe();
+            setUser(me);
+          } catch {
+            await AsyncStorage.removeItem("pageturn_token");
+            setToken(null);
+            setUser(null);
+          }
+        }
+      } catch {
         setToken(null);
         setUser(null);
       } finally {
@@ -55,7 +65,7 @@ export function AuthProvider({ children }) {
     user,
     token,
     isLoading,
-    isAuthenticated: !!token,
+    isAuthenticated: !!token && !!user,
     isAdmin: user?.role === "admin",
     login,
     register,
