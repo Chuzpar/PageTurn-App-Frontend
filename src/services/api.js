@@ -2,34 +2,30 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Platform } from "react-native";
 
+// FORCE production API on Vercel / any non-localhost host
 const PRODUCTION_API = "https://pageturn-api.onrender.com/api";
 
 const getApiBaseUrl = () => {
-  // Prefer explicit env (Expo / Vercel)
+  // 1. Explicit env var (highest priority)
   if (typeof process !== "undefined" && process.env?.EXPO_PUBLIC_API_URL) {
     return process.env.EXPO_PUBLIC_API_URL.replace(/\/$/, "");
   }
-  if (typeof process !== "undefined" && process.env?.REACT_APP_API_URL) {
-    return process.env.REACT_APP_API_URL.replace(/\/$/, "");
-  }
 
-  // Web production (Vercel host)
+  // 2. Browser (Vercel / any live site)
   if (typeof window !== "undefined" && window.location?.hostname) {
     const host = window.location.hostname;
-    if (host.includes("vercel.app") || host.includes("pageturn") || host !== "localhost") {
+    // Anything that is NOT pure localhost → use production API
+    if (host !== "localhost" && host !== "127.0.0.1") {
       return PRODUCTION_API;
     }
   }
 
-  // Local native emulators
+  // 3. Android emulator
   if (Platform.OS === "android") {
     return "http://10.0.2.2:5001/api";
   }
-  if (Platform.OS === "ios") {
-    return "http://localhost:5001/api";
-  }
 
-  // Default local web / Expo web
+  // 4. iOS simulator / local web
   return "http://localhost:5001/api";
 };
 
@@ -180,7 +176,6 @@ export const adminAdvanceOrder = (id) =>
 export const adminFetchDashboard = () =>
   api.get("/admin/dashboard").then((r) => r.data);
 
-// Open Library proxy (backend /api/public/...)
 export const searchOpenLibraryBooks = (query, limit = 10, offset = 0) =>
   api
     .get("/public/books", {
@@ -203,7 +198,6 @@ export const searchOpenLibraryByTitle = (title, limit = 10) =>
 export const searchOpenLibraryByAuthor = (author, limit = 10) =>
   api.get("/public/books", { params: { q: author, limit } }).then((r) => r.data);
 
-// Payment: backend uses Pesapal; keep mpesa name for UI compatibility → same checkout
 export const mpesaStkPush = (payload) =>
   api.post("/orders/checkout", payload).then((r) => r.data);
 
