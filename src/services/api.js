@@ -2,15 +2,34 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Platform } from "react-native";
 
+const PRODUCTION_API = "https://pageturn-api.onrender.com/api";
+
 const getApiBaseUrl = () => {
+  // Prefer explicit env (Expo / Vercel)
+  if (typeof process !== "undefined" && process.env?.EXPO_PUBLIC_API_URL) {
+    return process.env.EXPO_PUBLIC_API_URL.replace(/\/$/, "");
+  }
+  if (typeof process !== "undefined" && process.env?.REACT_APP_API_URL) {
+    return process.env.REACT_APP_API_URL.replace(/\/$/, "");
+  }
+
+  // Web production (Vercel host)
+  if (typeof window !== "undefined" && window.location?.hostname) {
+    const host = window.location.hostname;
+    if (host.includes("vercel.app") || host.includes("pageturn") || host !== "localhost") {
+      return PRODUCTION_API;
+    }
+  }
+
+  // Local native emulators
   if (Platform.OS === "android") {
     return "http://10.0.2.2:5001/api";
   }
-
   if (Platform.OS === "ios") {
     return "http://localhost:5001/api";
   }
 
+  // Default local web / Expo web
   return "http://localhost:5001/api";
 };
 
@@ -21,15 +40,14 @@ const api = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
+  timeout: 30000,
 });
 
 api.interceptors.request.use(async (config) => {
   const token = await AsyncStorage.getItem("pageturn_token");
-
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
-
   return config;
 });
 
@@ -40,7 +58,6 @@ api.interceptors.response.use(
       err?.response?.data?.error ||
       err?.message ||
       "Something went wrong";
-
     return Promise.reject(new Error(message));
   }
 );
@@ -97,13 +114,17 @@ export const fetchMyLendingRequests = (status) =>
     })
     .then((r) => r.data);
 
-export const fetchBorrowedBooks = () =>
-  api.get("/lending/borrowed").then((r) => r.data);
+export const toggleFavorite = (bookId) =>
+  api.post(`/books/${bookId}/favorite`).then((r) => r.data);
 
-export const returnBook = (requestId) =>
-  api
-    .post(`/lending/requests/${requestId}/return`)
-    .then((r) => r.data);
+export const fetchFavorites = () =>
+  api.get("/books/favorites").then((r) => r.data);
+
+export const submitReview = (bookId, payload) =>
+  api.post(`/books/${bookId}/reviews`, payload).then((r) => r.data);
+
+export const fetchReviews = (bookId) =>
+  api.get(`/books/${bookId}/reviews`).then((r) => r.data);
 
 export const adminFetchBooks = () =>
   api.get("/admin/books").then((r) => r.data);
@@ -159,66 +180,31 @@ export const adminAdvanceOrder = (id) =>
 export const adminFetchDashboard = () =>
   api.get("/admin/dashboard").then((r) => r.data);
 
-export const searchOpenLibraryBooks = (
-  query,
-  limit = 10,
-  offset = 0
-) =>
+// Open Library proxy (backend /api/public/...)
+export const searchOpenLibraryBooks = (query, limit = 10, offset = 0) =>
   api
     .get("/public/books", {
-      params: {
-        q: query,
-        limit,
-        offset,
-      },
+      params: { q: query, limit, offset },
     })
     .then((r) => r.data);
 
 export const getOpenLibraryWork = (workId) =>
-  api
-    .get(`/public/books/${workId}`)
-    .then((r) => r.data);
+  api.get(`/public/books/${workId}`).then((r) => r.data);
 
 export const getOpenLibraryBookByISBN = (isbn) =>
-  api
-    .get("/public/books", {
-      params: {
-        q: isbn,
-      },
-    })
-    .then((r) => r.data);
+  api.get("/public/books", { params: { q: isbn } }).then((r) => r.data);
 
 export const getOpenLibraryAuthor = (authorId) =>
-  api
-    .get(`/public/authors/${authorId}`)
-    .then((r) => r.data);
+  api.get(`/public/authors/${authorId}`).then((r) => r.data);
 
-export const searchOpenLibraryByTitle = (
-  title,
-  limit = 10
-) =>
-  api
-    .get("/public/books", {
-      params: {
-        q: title,
-        limit,
-      },
-    })
-    .then((r) => r.data);
+export const searchOpenLibraryByTitle = (title, limit = 10) =>
+  api.get("/public/books", { params: { q: title, limit } }).then((r) => r.data);
 
-export const searchOpenLibraryByAuthor = (
-  author,
-  limit = 10
-) =>
-  api
-    .get("/public/books", {
-      params: {
-        q: author,
-        limit,
-      },
-    })
-    .then((r) => r.data);
+export const searchOpenLibraryByAuthor = (author, limit = 10) =>
+  api.get("/public/books", { params: { q: author, limit } }).then((r) => r.data);
+
+// Payment: backend uses Pesapal; keep mpesa name for UI compatibility → same checkout
+export const mpesaStkPush = (payload) =>
+  api.post("/orders/checkout", payload).then((r) => r.data);
 
 export default api;
-
-export const mpesaStkPush = (payload) => api.post("/mpesa/stkpush", payload).then((r) => r.data);
