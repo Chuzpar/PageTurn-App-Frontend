@@ -17,6 +17,8 @@ function Pulse({ style }) {
   return <Animated.View style={[styles.block, style, { opacity }]} />;
 }
 
+// Mimics the BookCard grid shape while books are loading, instead of a blank
+// screen with a single spinner.
 export function BookGridSkeleton({ count = 6 }) {
   return (
     <View style={styles.grid}>

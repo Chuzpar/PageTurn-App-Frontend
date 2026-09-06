@@ -65,7 +65,9 @@ export default function LoginScreen({ navigation }) {
             style={{ marginTop: spacing.sm }}
           />
 
-
+          <Text style={[font.muted, { textAlign: "center", marginTop: spacing.lg }]}>
+            Demo admin: admin@pageturn.dev / admin123
+          </Text>
         </Screen>
       </ScrollView>
     </KeyboardAvoidingView>
