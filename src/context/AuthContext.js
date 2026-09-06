@@ -19,6 +19,7 @@ export function AuthProvider({ children }) {
             const { user: me } = await fetchMe();
             setUser(me);
           } catch {
+            // Token invalid/expired
             await AsyncStorage.removeItem("pageturn_token");
             setToken(null);
             setUser(null);
