@@ -94,7 +94,7 @@ export const fetchReviews = (bookId) =>
 export const submitReview = (bookId, payload) =>
   api.post(`/books/${bookId}/reviews`, payload).then((r) => r.data);
 
-// ---------- Favorites (fixes "addFavorite is not a function") ----------
+// ---------- Favorites ----------
 export const addFavorite = (bookId) =>
   api.post(`/books/${bookId}/favorite`).then((r) => r.data);
 
@@ -130,7 +130,6 @@ export const fetchOrders = () =>
 export const fetchOrder = (id) =>
   api.get(`/orders/${id}`).then((r) => r.data);
 
-// Pesapal (used by ReviewOrder / Checkout)
 export const initiatePesapalPayment = (payload) =>
   api.post("/payments/pesapal/initiate", payload).then((r) => r.data);
 

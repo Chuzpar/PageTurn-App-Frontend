@@ -11,7 +11,7 @@ import {
 import * as ImagePicker from "expo-image-picker";
 import { Ionicons } from "@expo/vector-icons";
 import { uploadImageToCloudinary } from "../services/cloudinary";
-import { colors, radii, spacing, font } from "../theme";
+import { colors, spacing, font } from "../theme";
 
 export default function AvatarPicker({ value, onChange, size = 96 }) {
   const [uploading, setUploading] = useState(false);
@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     right: 4,
     bottom: 4,
-    backgroundColor: colors.navyLight,
+    backgroundColor: colors.navyLight || colors.navy,
     width: 28,
     height: 28,
     borderRadius: 14,
@@ -109,5 +109,5 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: colors.white,
   },
-  error: { color: colors.danger, marginTop: spacing.xs, fontSize: 12 },
+  error: { color: colors.danger, marginTop: spacing.xs, fontSize: 12, textAlign: "center" },
 });
