@@ -1,25 +1,30 @@
 import React, { useState } from "react";
-import { Image, Text, TouchableOpacity, View, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  ActivityIndicator,
+  StyleSheet,
+  Alert,
+} from "react-native";
+import * as ImagePicker from "expo-image-picker";
+import { Ionicons } from "@expo/vector-icons";
 import { uploadImageToCloudinary } from "../services/cloudinary";
-import { colors, radii, spacing } from "../theme";
+import { colors, radii, spacing, font } from "../theme";
 
-export default function AvatarPicker({ value, onChange }) {
+export default function AvatarPicker({ value, onChange, size = 96 }) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
 
-  const chooseAvatar = async () => {
+  const pickImage = async () => {
     setError("");
-    let ImagePicker;
-    try {
-      ImagePicker = require("expo-image-picker");
-    } catch (e) {
-      setError("Avatar selection needs expo-image-picker. Run npm install, then restart Expo.");
-      return;
-    }
-
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) {
-      setError("Photo library permission is required to choose an avatar.");
+      Alert.alert(
+        "Permission needed",
+        "PageTurn needs access to your photos to set an avatar."
+      );
       return;
     }
 
@@ -27,14 +32,18 @@ export default function AvatarPicker({ value, onChange }) {
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [1, 1],
-      quality: 0.8,
+      quality: 0.85,
     });
     if (result.canceled) return;
 
+    const asset = result.assets[0];
     setUploading(true);
     try {
-      const asset = result.assets[0];
-      const url = await uploadImageToCloudinary(asset.uri, asset.fileName, asset.mimeType);
+      const url = await uploadImageToCloudinary(
+        asset.uri,
+        asset.fileName || "avatar.jpg",
+        asset.mimeType || "image/jpeg"
+      );
       onChange(url);
     } catch (e) {
       setError(e.message);
@@ -44,31 +53,61 @@ export default function AvatarPicker({ value, onChange }) {
   };
 
   return (
-    <View style={styles.container}>
-      <TouchableOpacity style={styles.avatar} onPress={chooseAvatar} disabled={uploading}>
-        {value ? <Image source={{ uri: value }} style={styles.image} /> : <Text style={styles.placeholder}>+</Text>}
+    <View style={styles.wrap}>
+      <TouchableOpacity
+        onPress={pickImage}
+        disabled={uploading}
+        style={[
+          styles.circle,
+          { width: size, height: size, borderRadius: size / 2 },
+        ]}
+      >
+        {uploading ? (
+          <ActivityIndicator color={colors.navy} />
+        ) : value ? (
+          <Image
+            source={{ uri: value }}
+            style={{ width: size, height: size, borderRadius: size / 2 }}
+          />
+        ) : (
+          <View style={styles.placeholder}>
+            <Ionicons name="person" size={size * 0.4} color={colors.gold} />
+            <Text style={styles.hint}>Upload avatar</Text>
+          </View>
+        )}
+        <View style={styles.badge}>
+          <Ionicons name="camera" size={14} color={colors.white} />
+        </View>
       </TouchableOpacity>
-      <Text style={styles.label}>{uploading ? "Uploading..." : value ? "Change avatar" : "Upload avatar"}</Text>
       {error ? <Text style={styles.error}>{error}</Text> : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { alignItems: "center", marginBottom: spacing.lg },
-  avatar: {
-    width: 96,
-    height: 96,
-    borderRadius: radii.pill,
-    overflow: "hidden",
+  wrap: { alignItems: "center", marginBottom: spacing.md },
+  circle: {
     backgroundColor: colors.navy,
     alignItems: "center",
     justifyContent: "center",
-    borderWidth: 2,
+    overflow: "hidden",
+    borderWidth: 3,
     borderColor: colors.gold,
   },
-  image: { width: "100%", height: "100%" },
-  placeholder: { color: colors.gold, fontSize: 40, fontWeight: "300" },
-  label: { color: colors.navy, fontSize: 13, fontWeight: "600", marginTop: spacing.xs },
-  error: { color: colors.danger, fontSize: 12, textAlign: "center", marginTop: spacing.xs },
+  placeholder: { alignItems: "center" },
+  hint: { ...font.muted, color: colors.gold, fontSize: 11, marginTop: 4 },
+  badge: {
+    position: "absolute",
+    right: 4,
+    bottom: 4,
+    backgroundColor: colors.navyLight,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 2,
+    borderColor: colors.white,
+  },
+  error: { color: colors.danger, marginTop: spacing.xs, fontSize: 12 },
 });
