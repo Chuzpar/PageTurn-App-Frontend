@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from "react";
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert } from "react-native";
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert, Platform } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { Screen, EmptyState, ErrorText, SecondaryButton } from "../../components/UI";
 import { adminFetchBooks, adminDeleteBook } from "../../services/api";
@@ -22,22 +22,33 @@ export default function AdminBooksScreen({ navigation }) {
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
 
+  const executeDelete = async (book) => {
+    try {
+      await adminDeleteBook(book.id);
+      showToast(`"${book.title}" removed`);
+      load();
+    } catch (e) {
+      setError(e.message);
+      showToast(e.message, "error");
+    }
+  };
+
   const handleDelete = (book) => {
-    Alert.alert("Delete Book", `Remove "${book.title}" from the archives?`, [
+    const message = `Remove "${book.title}" from the archives?`;
+    if (Platform.OS === "web") {
+      const confirmed = typeof window !== "undefined" && window.confirm ? window.confirm(message) : true;
+      if (confirmed) {
+        executeDelete(book);
+      }
+      return;
+    }
+
+    Alert.alert("Delete Book", message, [
       { text: "Cancel", style: "cancel" },
       {
         text: "Delete",
         style: "destructive",
-        onPress: async () => {
-          try {
-            await adminDeleteBook(book.id);
-            showToast(`"${book.title}" removed`);
-            load();
-          } catch (e) {
-            setError(e.message);
-            showToast(e.message, "error");
-          }
-        },
+        onPress: () => executeDelete(book),
       },
     ]);
   };
